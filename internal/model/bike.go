@@ -12,7 +12,7 @@ type Bike struct {
 	Description  string    `json:"description"`
 	IsAvailable  string    `json:"is_available" gorm:"size:1"`
 	Category     Category  `json:"category"`
-	Reviews      []Review  `json:"reviews,omitempty"`
+	Reviews      []Review  `json:"reviews"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
