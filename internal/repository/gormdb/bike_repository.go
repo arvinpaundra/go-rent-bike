@@ -39,7 +39,7 @@ func (u BikeRepository) FindAll(bikeName string) (*[]model.Bike, error) {
 func (u BikeRepository) FindById(bikeId string) (*model.Bike, error) {
 	bike := &model.Bike{}
 
-	err := database.DB.Model(&model.Bike{}).Where("id = ?", bikeId).Preload("Category").Take(&bike).Error
+	err := database.DB.Model(&model.Bike{}).Where("id = ?", bikeId).Preload("Category").Preload("Reviews").Take(&bike).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
