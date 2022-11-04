@@ -1,0 +1,6 @@
+.idea
+.env
+/build
+
+# ignore file test for a while
+*_test.go
