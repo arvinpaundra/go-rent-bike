@@ -63,3 +63,7 @@ type PaymentGatewayRepository interface {
 	CreateTransaction(snap dto.PaymentGateway) string
 	CreateUrlTransactionWithGateway(snap dto.PaymentGateway) string
 }
+
+type ReviewRepository interface {
+	Create(reviewUC model.Review) error
+}
