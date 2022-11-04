@@ -12,6 +12,7 @@ import (
 
 type BikeUsecase interface {
 	CreateNewBike(bikeDTO dto.BikeDTO) error
+	CreateNewBikeReview(bikeId string, reviewDTO dto.ReviewDTO) error
 	FindAllBikes(bikeName string) (*[]model.Bike, error)
 	FindByIdBike(bikeId string) (*model.Bike, error)
 	FindBikesByRenter(renterId string) (map[string]interface{}, error)
@@ -24,6 +25,8 @@ type bikeUsecase struct {
 	bikeRepository     repository.BikeRepository
 	renterRepository   gormdb.RenterRepository
 	categoryRepository gormdb.CategoryRepository
+	userRepository     gormdb.UserRepository
+	reviewRepository   gormdb.ReviewRepository
 }
 
 func (u bikeUsecase) CreateNewBike(bikeDTO dto.BikeDTO) error {
@@ -182,6 +185,34 @@ func (u bikeUsecase) DeleteBike(bikeId string) error {
 	}
 
 	err = u.bikeRepository.Delete(bikeId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u bikeUsecase) CreateNewBikeReview(bikeId string, reviewDTO dto.ReviewDTO) error {
+	if _, err := u.bikeRepository.FindById(bikeId); err != nil {
+		return err
+	}
+
+	if _, err := u.userRepository.FindById(reviewDTO.UserId); err != nil {
+		return err
+	}
+
+	review := model.Review{
+		ID:          uuid.NewString(),
+		BikeId:      bikeId,
+		UserId:      reviewDTO.UserId,
+		Rating:      reviewDTO.Rating,
+		Description: reviewDTO.Description,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	err := u.reviewRepository.Create(review)
 
 	if err != nil {
 		return err
