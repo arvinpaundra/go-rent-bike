@@ -64,7 +64,6 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 	paymentId := uuid.NewString()
 	payment := model.Payment{
 		ID:            paymentId,
-		TotalPayment:  totalPayments,
 		PaymentStatus: "pending",
 		PaymentType:   orderDTO.PaymentType,
 		CreatedAt:     time.Now(),
@@ -78,13 +77,14 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 	// initiate the order, then create order
 	orderId := uuid.NewString()
 	order := model.Order{
-		ID:        orderId,
-		UserId:    orderDTO.CustomerId,
-		PaymentId: paymentId,
-		TotalQty:  len(bikes),
-		TotalHour: orderDTO.TotalHour,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:           orderId,
+		UserId:       orderDTO.CustomerId,
+		PaymentId:    paymentId,
+		TotalPayment: totalPayments,
+		TotalQty:     len(bikes),
+		TotalHour:    orderDTO.TotalHour,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 	}
 
 	if err := u.orderRepository.Create(order); err != nil {
@@ -132,10 +132,10 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 	snapUrl := u.paymentGatewayRepository.CreateUrlTransactionWithGateway(snapReq)
 
 	data := map[string]interface{}{
-		"order_id": order.ID,
+		"order_id":       order.ID,
+		"total_payments": totalPayments,
 		"payments": map[string]interface{}{
 			"id":             payment.ID,
-			"total_payment":  payment.TotalPayment,
 			"payment_status": payment.PaymentStatus,
 			"payment_type":   payment.PaymentType,
 			"created_at":     payment.CreatedAt,
