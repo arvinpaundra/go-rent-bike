@@ -11,6 +11,12 @@ import (
 func New(db *gorm.DB, e *echo.Echo) {
 	v1 := e.Group("/api/v1")
 
+	// midtrans notif
+	paymentGatewayUsecase := usecase.NewPaymentGatewayUsecase()
+	paymentGatewayController := controller.NewMidtransNotificationController(paymentGatewayUsecase)
+
+	v1.POST("/webhook/midtrans", paymentGatewayController.HandlerNotification)
+
 	//	user auth
 	userRepository := gormdb.NewUserRepositoryGorm(db)
 	userUsecase := usecase.NewUserUsecase(userRepository)
@@ -64,6 +70,7 @@ func New(db *gorm.DB, e *echo.Echo) {
 	b.GET("/:id", bikeController.HandlerFindByIdBike)
 	b.PUT("/:id", bikeController.HandlerUpdateBike)
 	b.DELETE("/:id", bikeController.HandlerDeleteBike)
+	b.POST("/:id/reviews", bikeController.HandlerCreateNewBikeReview)
 
 	// order
 	orderRepository := gormdb.NewOrderRepository(db)
@@ -74,10 +81,4 @@ func New(db *gorm.DB, e *echo.Echo) {
 	o.POST("", orderController.HandlerCreateNewOrder)
 	o.GET("/customers/:userId", orderController.HandlerFindAllOrdersUser)
 	o.GET("/:orderId/customers", orderController.HandlerFindByIdOrderUser)
-
-	// midtrans notif
-	paymentGatewayUsecase := usecase.NewPaymentGatewayUsecase()
-	paymentGatewayController := controller.NewMidtransNotificationController(paymentGatewayUsecase)
-
-	v1.POST("/webhook/midtrans", paymentGatewayController.HandlerNotification)
 }
