@@ -233,3 +233,40 @@ func (h *BikeController) HandlerDeleteBike(c echo.Context) error {
 		"data":    nil,
 	})
 }
+
+func (h *BikeController) HandlerCreateNewBikeReview(c echo.Context) error {
+	reviewDTO := dto.ReviewDTO{}
+	bikeId := c.Param("id")
+
+	if err := c.Bind(&reviewDTO); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status":  "error",
+			"message": "fill all required fields",
+			"data":    nil,
+		})
+	}
+
+	err := h.bikeUsecase.CreateNewBikeReview(bikeId, reviewDTO)
+
+	if err != nil {
+		if errors.Is(err, internal.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"status":  "error",
+				"message": "bike or customer not found",
+				"data":    nil,
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.JSON(http.StatusCreated, map[string]interface{}{
+		"status":  "success",
+		"message": "success create new bike review",
+		"data":    nil,
+	})
+}
