@@ -10,7 +10,7 @@ type Order struct {
 	TotalQty     int           `json:"total_qty"`
 	TotalHour    int           `json:"total_hour"`
 	OrderDetails []OrderDetail `json:"order_details,omitempty"`
-	Payment      Payment       `json:"payment_details"`
+	Payment      *Payment      `json:"payment_details,omitempty"`
 	CreatedAt    time.Time     `json:"created_at"`
 	UpdatedAt    time.Time     `json:"updated_at"`
 }
