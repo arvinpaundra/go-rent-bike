@@ -28,7 +28,7 @@ func (r RenterRepository) Create(renterUC model.Renter) error {
 func (r RenterRepository) FindByIdUser(userId string) (*model.Renter, error) {
 	renter := &model.Renter{}
 
-	err := database.DB.Model(&model.Renter{}).Where("user_id", userId).Preload("User", "id = ?", userId).Take(&renter).Error
+	err := database.DB.Model(&model.Renter{}).Where("user_id", userId).Preload("User", "id = ?", userId).Preload("Bikes").Take(&renter).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -56,7 +56,7 @@ func (r RenterRepository) FindAll(rentName string) (*[]model.Renter, error) {
 func (r RenterRepository) FindById(renterId string) (*model.Renter, error) {
 	renter := &model.Renter{}
 
-	err := database.DB.Model(&model.Renter{}).Where("id = ?", renterId).Preload("User").Take(&renter).Error
+	err := database.DB.Model(&model.Renter{}).Where("id = ?", renterId).Preload("User").Preload("Bikes").Preload("Bikes.Category").Take(&renter).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
