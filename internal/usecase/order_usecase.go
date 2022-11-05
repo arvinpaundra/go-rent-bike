@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
+	pgMidtrans "github.com/arvinpaundra/go-rent-bike/internal/midtrans"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository/gormdb"
@@ -19,7 +20,7 @@ type OrderUsecase interface {
 
 type orderUsecase struct {
 	orderRepository          repository.OrderRepository
-	paymentGatewayRepository gormdb.PaymentGatewayRepository
+	paymentGatewayRepository pgMidtrans.PaymentGatewayRepository
 	orderDetailRepository    gormdb.OrderDetailRepository
 	userRepository           gormdb.UserRepository
 	bikeRepository           gormdb.BikeRepository
