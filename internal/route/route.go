@@ -30,6 +30,7 @@ func New(db *gorm.DB, e *echo.Echo) {
 	u := v1.Group("/customers")
 	u.GET("", userController.HandlerFindAllUsers)
 	u.GET("/:id", userController.HandlerFindUserById)
+	u.GET("/:id/histories", userController.HandlerFindAllUserHistories)
 	u.PUT("/:id", userController.HandlerUpdateUser)
 	u.DELETE("/:id", userController.HandlerDeleteUser)
 
@@ -81,4 +82,5 @@ func New(db *gorm.DB, e *echo.Echo) {
 	o.POST("", orderController.HandlerCreateNewOrder)
 	o.GET("/customers/:userId", orderController.HandlerFindAllOrdersUser)
 	o.GET("/:orderId/customers", orderController.HandlerFindByIdOrderUser)
+	o.GET("/:orderId/return", orderController.HandlerReturnBike)
 }
