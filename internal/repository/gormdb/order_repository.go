@@ -28,7 +28,7 @@ func (r OrderRepository) Create(orderUC model.Order) error {
 func (r OrderRepository) FindAll(userId string) (*[]model.Order, error) {
 	orders := &[]model.Order{}
 
-	err := database.DB.Model(&model.Order{}).Preload(clause.Associations).Where("user_id = ?", userId).Find(&orders).Error
+	err := database.DB.Model(&model.Order{}).Where("user_id = ?", userId).Find(&orders).Error
 
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (r OrderRepository) FindAll(userId string) (*[]model.Order, error) {
 func (r OrderRepository) FindById(orderId string) (*model.Order, error) {
 	order := &model.Order{}
 
-	err := database.DB.Model(&model.Order{}).Where("id = ?", orderId).Preload(clause.Associations).Take(&order).Error
+	err := database.DB.Model(&model.Order{}).Where("id = ?", orderId).Preload("OrderDetails.Bike.Category").Preload(clause.Associations).Take(&order).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
