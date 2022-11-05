@@ -48,6 +48,8 @@ func New(db *gorm.DB, e *echo.Echo) {
 	r.POST("", renterController.HandlerCreateRenter, middleware.JWT([]byte(configs.Cfg.JWTSecret)))
 	r.GET("", renterController.HandlerFindAllRenters)
 	r.GET("/:id", renterController.HandlerFindRenterById)
+	r.POST("/:id/reports", renterController.HandlerCreateReportRenter)
+	r.GET("/:id/reports", renterController.HandlerFindAllRenterReports)
 	r.PUT("/:id", renterController.HandlerUpdateRenter, middleware.JWT([]byte(configs.Cfg.JWTSecret)), mddlwrs.CheckIsRenter)
 	r.DELETE("/:id", renterController.HandlerDeleteRenter, middleware.JWT([]byte(configs.Cfg.JWTSecret)), mddlwrs.CheckIsRenter)
 

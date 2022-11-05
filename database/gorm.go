@@ -27,5 +27,5 @@ func InitMysqlDatabase() {
 
 	DB = db
 
-	_ = DB.AutoMigrate(&model.User{}, &model.Renter{}, &model.Category{}, &model.Bike{}, &model.Payment{}, &model.Order{}, &model.OrderDetail{}, &model.Review{}, &model.History{})
+	_ = DB.AutoMigrate(&model.User{}, &model.Renter{}, &model.Category{}, &model.Bike{}, &model.Payment{}, &model.Order{}, &model.OrderDetail{}, &model.Review{}, &model.History{}, &model.Report{})
 }

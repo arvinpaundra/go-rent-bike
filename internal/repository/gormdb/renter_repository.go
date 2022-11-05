@@ -44,7 +44,9 @@ func (r RenterRepository) FindByIdUser(userId string) (*model.Renter, error) {
 func (r RenterRepository) FindAll(rentName string) (*[]model.Renter, error) {
 	renters := &[]model.Renter{}
 
-	err := database.DB.Model(&model.Renter{}).Preload("User").Where("rent_name LIKE ?", "%"+rentName+"%").Find(&renters).Error
+	err := database.DB.Model(&model.Renter{}).Preload("User").Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Omit("password")
+	}).Where("rent_name LIKE ?", "%"+rentName+"%").Find(&renters).Error
 
 	if err != nil {
 		return nil, err
@@ -56,7 +58,9 @@ func (r RenterRepository) FindAll(rentName string) (*[]model.Renter, error) {
 func (r RenterRepository) FindById(renterId string) (*model.Renter, error) {
 	renter := &model.Renter{}
 
-	err := database.DB.Model(&model.Renter{}).Where("id = ?", renterId).Preload("User").Preload("Bikes").Preload("Bikes.Category").Take(&renter).Error
+	err := database.DB.Model(&model.Renter{}).Where("id = ?", renterId).Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Omit("password")
+	}).Take(&renter).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

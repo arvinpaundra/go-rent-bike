@@ -55,6 +55,43 @@ func (r *RenterController) HandlerCreateRenter(c echo.Context) error {
 	})
 }
 
+func (r RenterController) HandlerCreateReportRenter(c echo.Context) error {
+	renterId := c.Param("id")
+	reportDTO := dto.ReportDTO{}
+
+	if err := c.Bind(&reportDTO); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status":  "error",
+			"message": "fill all required fields",
+			"data":    nil,
+		})
+	}
+
+	err := r.renterUsecase.CreateReportRenter(renterId, reportDTO)
+
+	if err != nil {
+		if errors.Is(err, internal.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"status":  "error",
+				"message": "renter not found",
+				"data":    nil,
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.JSON(http.StatusCreated, map[string]interface{}{
+		"status":  "success",
+		"message": "success report renter",
+		"data":    nil,
+	})
+}
+
 func (r *RenterController) HandlerFindAllRenters(c echo.Context) error {
 	search := c.QueryParam("rental_name")
 
@@ -103,6 +140,36 @@ func (r *RenterController) HandlerFindRenterById(c echo.Context) error {
 		"message": "success get renter by id",
 		"data": map[string]*model.Renter{
 			"renter": renter,
+		},
+	})
+}
+
+func (r *RenterController) HandlerFindAllRenterReports(c echo.Context) error {
+	renterId := c.Param("id")
+
+	reports, err := r.renterUsecase.FindAllRenterReports(renterId)
+
+	if err != nil {
+		if errors.Is(err, internal.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"status":  "error",
+				"message": "renter not found",
+				"data":    nil,
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+		"status":  "success",
+		"message": "success get all reports",
+		"data": map[string]*[]model.Report{
+			"reports": reports,
 		},
 	})
 }

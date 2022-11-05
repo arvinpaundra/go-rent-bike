@@ -12,8 +12,10 @@ import (
 
 type RenterUsecase interface {
 	CreateRenter(renterDTO dto.RenterDTO) error
+	CreateReportRenter(renterId string, reportDTO dto.ReportDTO) error
 	FindAllRenters(rentName string) (*[]model.Renter, error)
 	FindByIdRenter(renterId string) (*model.Renter, error)
+	FindAllRenterReports(renterId string) (*[]model.Report, error)
 	UpdateRenter(renterId string, renterDTO dto.RenterDTO) error
 	DeleteRenter(renterId string) (uint, error)
 }
@@ -21,6 +23,7 @@ type RenterUsecase interface {
 type renterUsecase struct {
 	renterRepository repository.RenterRepository
 	userRepository   gormdb.UserRepository
+	reportRepository gormdb.ReportRepository
 }
 
 func (r renterUsecase) CreateRenter(renterDTO dto.RenterDTO) error {
@@ -47,6 +50,30 @@ func (r renterUsecase) CreateRenter(renterDTO dto.RenterDTO) error {
 	return nil
 }
 
+func (r renterUsecase) CreateReportRenter(renterId string, reportDTO dto.ReportDTO) error {
+	if _, err := r.renterRepository.FindById(renterId); err != nil {
+		return err
+	}
+
+	report := model.Report{
+		ID:         uuid.NewString(),
+		RenterId:   renterId,
+		UserId:     reportDTO.UserId,
+		TitleIssue: reportDTO.TitleIssue,
+		BodyIssue:  reportDTO.BodyIssue,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	err := r.reportRepository.Create(report)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r renterUsecase) FindAllRenters(rentName string) (*[]model.Renter, error) {
 	renters, err := r.renterRepository.FindAll(rentName)
 
@@ -65,6 +92,20 @@ func (r renterUsecase) FindByIdRenter(renterId string) (*model.Renter, error) {
 	}
 
 	return renter, nil
+}
+
+func (r renterUsecase) FindAllRenterReports(renterId string) (*[]model.Report, error) {
+	if _, err := r.renterRepository.FindById(renterId); err != nil {
+		return nil, err
+	}
+
+	reports, err := r.reportRepository.FindAll(renterId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return reports, nil
 }
 
 func (r renterUsecase) UpdateRenter(renterId string, renterDTO dto.RenterDTO) error {
