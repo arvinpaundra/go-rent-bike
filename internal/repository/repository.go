@@ -75,3 +75,8 @@ type HistoryRepository interface {
 	FindByIdOrder(orderId string) (*model.History, error)
 	Update(orderId string, historyUC model.History) error
 }
+
+type ReportRepository interface {
+	Create(reportUC model.Report) error
+	FindAll(renterId string) (*[]model.Report, error)
+}
