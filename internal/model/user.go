@@ -9,9 +9,9 @@ type User struct {
 	Address   string    `json:"address"`
 	Role      string    `json:"role" gorm:"size:50"`
 	Email     string    `json:"email" gorm:"size:255"`
-	Password  string    `json:"password" gorm:"size:255"`
-	Orders    []Order   `json:"orders"`
-	Reviews   []Review  `json:"reviews"`
+	Password  string    `json:"password,omitempty" gorm:"size:255"`
+	Orders    []Order   `json:"orders,omitempty"`
+	Reviews   []Review  `json:"reviews,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
