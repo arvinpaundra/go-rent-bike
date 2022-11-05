@@ -82,7 +82,7 @@ func New(db *gorm.DB, e *echo.Echo) {
 
 	// order
 	orderRepository := gormdb.NewOrderRepository(db)
-	orderUsecase := usecase.NeworderUsecase(orderRepository)
+	orderUsecase := usecase.NewOrderUsecase(orderRepository)
 	orderController := controller.NewOrderController(orderUsecase)
 
 	o := v1.Group("/orders", middleware.JWT([]byte(configs.Cfg.JWTSecret)))

@@ -215,7 +215,7 @@ func (u orderUsecase) UpdateRentStatus(orderId string) error {
 	return nil
 }
 
-func NeworderUsecase(orderRepo repository.OrderRepository) OrderUsecase {
+func NewOrderUsecase(orderRepo repository.OrderRepository) OrderUsecase {
 	return orderUsecase{
 		orderRepository: orderRepo,
 	}
