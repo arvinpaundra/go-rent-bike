@@ -8,8 +8,9 @@ type Renter struct {
 	RentName    string    `json:"rent_name" gorm:"size:255"`
 	RentAddress string    `json:"rent_address"`
 	Description string    `json:"description"`
-	User        User      `json:"owner"`
-	Bikes       []Bike    `json:"bikes"`
+	User        User      `json:"user"`
+	Bikes       []Bike    `json:"bikes,omitempty"`
+	Report      []Report  `json:"reports,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
