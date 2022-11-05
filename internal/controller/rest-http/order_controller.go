@@ -109,3 +109,31 @@ func (h *OrderController) HandlerFindByIdOrderUser(c echo.Context) error {
 		"data":    order,
 	})
 }
+
+func (h *OrderController) HandlerReturnBike(c echo.Context) error {
+	orderId := c.Param("orderId")
+
+	err := h.orderUsecase.UpdateRentStatus(orderId)
+
+	if err != nil {
+		if errors.Is(err, internal.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"status":  "error",
+				"message": "order not found",
+				"data":    nil,
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  "success",
+		"message": "success return bike",
+		"data":    nil,
+	})
+}
