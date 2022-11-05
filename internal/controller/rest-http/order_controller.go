@@ -54,64 +54,8 @@ func (h *OrderController) HandlerCreateNewOrder(c echo.Context) error {
 	})
 }
 
-func (h *OrderController) HandlerFindAllOrdersUser(c echo.Context) error {
-	userId := c.Param("userId")
-
-	orders, err := h.orderUsecase.FindAllOrdersUser(userId)
-
-	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
-			return c.JSON(http.StatusNotFound, map[string]interface{}{
-				"status":  "error",
-				"message": "customer not found",
-				"data":    nil,
-			})
-		}
-
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"status":  "error",
-			"message": err.Error(),
-			"data":    nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"status":  "success",
-		"message": "success get all user orders",
-		"data":    orders,
-	})
-}
-
-func (h *OrderController) HandlerFindByIdOrderUser(c echo.Context) error {
-	orderId := c.Param("orderId")
-
-	order, err := h.orderUsecase.FindByIdOrderUser(orderId)
-
-	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
-			return c.JSON(http.StatusNotFound, map[string]interface{}{
-				"status":  "error",
-				"message": "order not found",
-				"data":    nil,
-			})
-		}
-
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"status":  "error",
-			"message": err.Error(),
-			"data":    nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"status":  "success",
-		"message": "success get order by id order and user",
-		"data":    order,
-	})
-}
-
 func (h *OrderController) HandlerReturnBike(c echo.Context) error {
-	orderId := c.Param("orderId")
+	orderId := c.Param("id")
 
 	err := h.orderUsecase.UpdateRentStatus(orderId)
 

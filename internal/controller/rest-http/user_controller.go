@@ -96,14 +96,12 @@ func (u *UserController) HandlerLogin(c echo.Context) error {
 		})
 	}
 
-	//Not ready
-	token, _ := helper.CreateToken(user.ID)
+	token, _ := helper.CreateToken(user.ID, user.Role)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "login success",
-		"data": map[string]interface{}{
-			"user":  user,
+		"data": map[string]string{
 			"token": token,
 		},
 	})
@@ -186,6 +184,63 @@ func (u *UserController) HandlerFindAllUserHistories(c echo.Context) error {
 		"data": map[string]*[]model.History{
 			"histories": histories,
 		},
+	})
+}
+
+func (h *UserController) HandlerFindAllOrdersUser(c echo.Context) error {
+	userId := c.Param("id")
+
+	orders, err := h.userUsecase.FindAllOrdersUser(userId)
+
+	if err != nil {
+		if errors.Is(err, internal.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"status":  "error",
+				"message": "customer not found",
+				"data":    nil,
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  "success",
+		"message": "success get all user orders",
+		"data":    orders,
+	})
+}
+
+func (h *UserController) HandlerFindByIdOrderUser(c echo.Context) error {
+	_ = c.Param("id")
+	orderId := c.Param("orderId")
+
+	order, err := h.userUsecase.FindByIdOrderUser(orderId)
+
+	if err != nil {
+		if errors.Is(err, internal.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"status":  "error",
+				"message": "order not found",
+				"data":    nil,
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  "success",
+		"message": "success get order by id order and user",
+		"data":    order,
 	})
 }
 
