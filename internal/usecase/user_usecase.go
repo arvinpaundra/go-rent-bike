@@ -9,6 +9,7 @@ import (
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
+	"github.com/arvinpaundra/go-rent-bike/internal/repository/gormdb"
 )
 
 type UserUsecase interface {
@@ -16,12 +17,14 @@ type UserUsecase interface {
 	LoginUser(email string, password string) (*model.User, error)
 	FindAllUsers() (*[]model.User, error)
 	FindByIdUser(userId string) (*model.User, error)
+	FindAllUserHistories(userId string) (*[]model.History, error)
 	UpdateUser(userId string, userDTO dto.UserDTO) error
 	DeleteUser(userId string) (uint, error)
 }
 
 type userUsecase struct {
-	userRepository repository.UserRepository
+	userRepository    repository.UserRepository
+	historyRepository gormdb.HistoryRepository
 }
 
 func (u userUsecase) RegisterUser(userDTO dto.UserDTO) error {
@@ -78,6 +81,20 @@ func (u userUsecase) FindByIdUser(userId string) (*model.User, error) {
 	return user, nil
 }
 
+func (u userUsecase) FindAllUserHistories(userId string) (*[]model.History, error) {
+	if _, err := u.userRepository.FindById(userId); err != nil {
+		return nil, err
+	}
+
+	histories, err := u.historyRepository.FindAll(userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return histories, nil
+}
+
 func (u userUsecase) UpdateUser(userId string, userDTO dto.UserDTO) error {
 	user := model.User{
 		Address:   userDTO.Address,
@@ -105,5 +122,5 @@ func (u userUsecase) DeleteUser(userId string) (uint, error) {
 }
 
 func NewUserUsecase(userRepo repository.UserRepository) UserUsecase {
-	return userUsecase{userRepo}
+	return userUsecase{userRepository: userRepo}
 }
