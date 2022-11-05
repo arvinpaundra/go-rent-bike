@@ -19,6 +19,7 @@ type PaymentGatewayUsecase interface {
 type paymentGatewayUsecase struct {
 	orderRepository   gormdb.OrderRepository
 	paymentRepository gormdb.PaymentRepository
+	historyRepository gormdb.HistoryRepository
 }
 
 func (u paymentGatewayUsecase) InitializeCoreapiClient() {
@@ -47,14 +48,26 @@ func (u paymentGatewayUsecase) MidtransNotification(orderId string) error {
 		return err
 	}
 
+	history := &model.History{}
+	history, err = u.historyRepository.FindByIdOrder(orderId)
+
+	if err != nil {
+		return err
+	}
+
 	if transactionStatusRes.TransactionStatus == "settlement" && transactionStatusRes.FraudStatus == "accept" {
 		payment.PaymentStatus = "settlement"
 		payment.PaymentType = transactionStatusRes.PaymentType
 		payment.UpdatedAt = time.Now()
 
-		err := u.paymentRepository.Update(payment.ID, *payment)
+		if err := u.paymentRepository.Update(payment.ID, *payment); err != nil {
+			return err
+		}
 
-		if err != nil {
+		history.RentStatus = "rented"
+		history.UpdatedAt = time.Now()
+
+		if err := u.historyRepository.Update(orderId, *history); err != nil {
 			return err
 		}
 	} else if transactionStatusRes.TransactionStatus == "deny" {
@@ -62,9 +75,14 @@ func (u paymentGatewayUsecase) MidtransNotification(orderId string) error {
 		payment.PaymentType = transactionStatusRes.PaymentType
 		payment.UpdatedAt = time.Now()
 
-		err := u.paymentRepository.Update(payment.ID, *payment)
+		if err := u.paymentRepository.Update(payment.ID, *payment); err != nil {
+			return err
+		}
 
-		if err != nil {
+		history.RentStatus = "denied"
+		history.UpdatedAt = time.Now()
+
+		if err := u.historyRepository.Update(orderId, *history); err != nil {
 			return err
 		}
 	} else if transactionStatusRes.TransactionStatus == "cancel" || transactionStatusRes.TransactionStatus == "expired" {
@@ -72,19 +90,21 @@ func (u paymentGatewayUsecase) MidtransNotification(orderId string) error {
 		payment.PaymentType = transactionStatusRes.PaymentType
 		payment.UpdatedAt = time.Now()
 
-		err := u.paymentRepository.Update(payment.ID, *payment)
+		if err := u.paymentRepository.Update(payment.ID, *payment); err != nil {
+			return err
+		}
 
-		if err != nil {
+		history.RentStatus = "canceled"
+		history.UpdatedAt = time.Now()
+
+		if err := u.historyRepository.Update(orderId, *history); err != nil {
 			return err
 		}
 	} else if transactionStatusRes.TransactionStatus == "pending" {
-		payment.PaymentStatus = "pending"
 		payment.PaymentType = transactionStatusRes.PaymentType
 		payment.UpdatedAt = time.Now()
 
-		err := u.paymentRepository.Update(payment.ID, *payment)
-
-		if err != nil {
+		if err := u.paymentRepository.Update(payment.ID, *payment); err != nil {
 			return err
 		}
 	}
