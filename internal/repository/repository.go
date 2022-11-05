@@ -56,6 +56,7 @@ type OrderRepository interface {
 
 type OrderDetailRepository interface {
 	Create(orderDetailUC []model.OrderDetail) error
+	FindByIdOrder(orderId string) (*[]model.OrderDetail, error)
 }
 
 type PaymentGatewayRepository interface {
@@ -66,4 +67,11 @@ type PaymentGatewayRepository interface {
 
 type ReviewRepository interface {
 	Create(reviewUC model.Review) error
+}
+
+type HistoryRepository interface {
+	Create(historyUC model.History) error
+	FindAll(userId string) (*[]model.History, error)
+	FindByIdOrder(orderId string) (*model.History, error)
+	Update(orderId string, historyUC model.History) error
 }
