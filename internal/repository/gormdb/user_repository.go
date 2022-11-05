@@ -55,7 +55,7 @@ func (u UserRepository) FindByEmailAndPassword(email string, password string) (*
 func (u UserRepository) FindAll() (*[]model.User, error) {
 	users := &[]model.User{}
 
-	err := database.DB.Model(&model.User{}).Find(&users).Error
+	err := database.DB.Model(&model.User{}).Omit("password").Find(&users).Error
 
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (u UserRepository) FindAll() (*[]model.User, error) {
 func (u UserRepository) FindById(userId string) (*model.User, error) {
 	user := &model.User{}
 
-	err := database.DB.Model(&model.User{}).Where("id = ?", userId).Take(&user).Error
+	err := database.DB.Model(&model.User{}).Where("id = ?", userId).Omit("password").Take(&user).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
