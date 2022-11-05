@@ -159,6 +159,36 @@ func (u *UserController) HandlerFindUserById(c echo.Context) error {
 	})
 }
 
+func (u *UserController) HandlerFindAllUserHistories(c echo.Context) error {
+	userId := c.Param("id")
+
+	histories, err := u.userUsecase.FindAllUserHistories(userId)
+
+	if err != nil {
+		if errors.Is(err, internal.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]interface{}{
+				"status":  "error",
+				"message": "user not found",
+				"data":    nil,
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  "error",
+			"message": err.Error(),
+			"data":    nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  "success",
+		"message": "success get user histories",
+		"data": map[string]*[]model.History{
+			"histories": histories,
+		},
+	})
+}
+
 func (u *UserController) HandlerUpdateUser(c echo.Context) error {
 	userId := c.Param("id")
 	userDTO := dto.UserDTO{}
