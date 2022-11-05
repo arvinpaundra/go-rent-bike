@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"time"
 
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
@@ -15,7 +16,7 @@ type OrderUsecase interface {
 	CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}, error)
 	FindAllOrdersUser(userId string) (*[]model.Order, error)
 	FindByIdOrderUser(orderId string) (*model.Order, error)
-	UpdateOrder(orderId string) (map[string]interface{}, error)
+	UpdateRentStatus(orderId string) error
 }
 
 type orderUsecase struct {
@@ -25,6 +26,7 @@ type orderUsecase struct {
 	userRepository           gormdb.UserRepository
 	bikeRepository           gormdb.BikeRepository
 	paymentRepository        gormdb.PaymentRepository
+	historyRepository        gormdb.HistoryRepository
 }
 
 func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}, error) {
@@ -47,6 +49,16 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 		bike, err := u.bikeRepository.FindById(orderDTO.BikeIds[i])
 
 		if err != nil {
+			return nil, err
+		} else if bike.IsAvailable == "0" {
+			return nil, errors.New("bike not available")
+		}
+
+		bike.IsAvailable = "0"
+		bike.UpdatedAt = time.Now()
+
+		// update availability of each bike to "0", which is unavailable
+		if err := u.bikeRepository.Update(bike.ID, *bike); err != nil {
 			return nil, err
 		}
 
@@ -108,6 +120,20 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 		return nil, err
 	}
 
+	// initiate history, then create new user history
+	history := model.History{
+		ID:         uuid.NewString(),
+		OrderId:    orderId,
+		RentStatus: "pending payment",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	if err := u.historyRepository.Create(history); err != nil {
+		return nil, err
+	}
+
+	// set the item details to send to payment gateway
 	items := []midtrans.ItemDetails{}
 	for i := range bikes {
 		item := midtrans.ItemDetails{
@@ -121,6 +147,7 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 		items = append(items, item)
 	}
 
+	// init the request body to send to payment gateway
 	snapReq := dto.PaymentGateway{
 		Email:    customer.Email,
 		Phone:    customer.Phone,
@@ -129,8 +156,10 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 		Items:    items,
 	}
 
+	// send request to payment gateway
 	snapUrl := u.paymentGatewayRepository.CreateUrlTransactionWithGateway(snapReq)
 
+	// setup response from my app
 	data := map[string]interface{}{
 		"order_id":       order.ID,
 		"total_payments": totalPayments,
@@ -171,8 +200,45 @@ func (u orderUsecase) FindByIdOrderUser(orderId string) (*model.Order, error) {
 	return order, nil
 }
 
-func (u orderUsecase) UpdateOrder(orderId string) (map[string]interface{}, error) {
-	panic("implement me")
+func (u orderUsecase) UpdateRentStatus(orderId string) error {
+	var err error
+
+	order := &model.Order{}
+	order, err = u.orderRepository.FindById(orderId)
+	if err != nil {
+		return err
+	}
+
+	// get the bike from Order.OrderDetails
+	for i := range order.OrderDetails {
+		bike := order.OrderDetails[i].Bike
+
+		// update the bike availability
+		bike.IsAvailable = "1"
+
+		err := u.bikeRepository.Update(bike.ID, *bike)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	history := &model.History{}
+	history, err = u.historyRepository.FindByIdOrder(orderId)
+
+	if err != nil {
+		return err
+	}
+
+	history.RentStatus = "done"
+
+	err = u.historyRepository.Update(orderId, *history)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NeworderUsecase(orderRepo repository.OrderRepository) OrderUsecase {
