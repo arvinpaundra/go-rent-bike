@@ -18,6 +18,8 @@ type UserUsecase interface {
 	FindAllUsers() (*[]model.User, error)
 	FindByIdUser(userId string) (*model.User, error)
 	FindAllUserHistories(userId string) (*[]model.History, error)
+	FindAllOrdersUser(userId string) (*[]model.Order, error)
+	FindByIdOrderUser(orderId string) (*model.Order, error)
 	UpdateUser(userId string, userDTO dto.UserDTO) error
 	DeleteUser(userId string) (uint, error)
 }
@@ -25,6 +27,7 @@ type UserUsecase interface {
 type userUsecase struct {
 	userRepository    repository.UserRepository
 	historyRepository gormdb.HistoryRepository
+	orderRepository   gormdb.OrderRepository
 }
 
 func (u userUsecase) RegisterUser(userDTO dto.UserDTO) error {
@@ -93,6 +96,30 @@ func (u userUsecase) FindAllUserHistories(userId string) (*[]model.History, erro
 	}
 
 	return histories, nil
+}
+
+func (u userUsecase) FindAllOrdersUser(userId string) (*[]model.Order, error) {
+	if _, err := u.userRepository.FindById(userId); err != nil {
+		return nil, err
+	}
+
+	orders, err := u.orderRepository.FindAll(userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func (u userUsecase) FindByIdOrderUser(orderId string) (*model.Order, error) {
+	order, err := u.orderRepository.FindById(orderId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return order, nil
 }
 
 func (u userUsecase) UpdateUser(userId string, userDTO dto.UserDTO) error {

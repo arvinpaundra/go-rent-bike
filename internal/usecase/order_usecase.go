@@ -14,8 +14,6 @@ import (
 
 type OrderUsecase interface {
 	CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}, error)
-	FindAllOrdersUser(userId string) (*[]model.Order, error)
-	FindByIdOrderUser(orderId string) (*model.Order, error)
 	UpdateRentStatus(orderId string) error
 }
 
@@ -174,30 +172,6 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 	}
 
 	return data, nil
-}
-
-func (u orderUsecase) FindAllOrdersUser(userId string) (*[]model.Order, error) {
-	if _, err := u.userRepository.FindById(userId); err != nil {
-		return nil, err
-	}
-
-	orders, err := u.orderRepository.FindAll(userId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return orders, nil
-}
-
-func (u orderUsecase) FindByIdOrderUser(orderId string) (*model.Order, error) {
-	order, err := u.orderRepository.FindById(orderId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return order, nil
 }
 
 func (u orderUsecase) UpdateRentStatus(orderId string) error {
