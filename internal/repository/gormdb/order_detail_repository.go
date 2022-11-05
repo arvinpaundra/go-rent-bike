@@ -21,6 +21,18 @@ func (r OrderDetailRepository) Create(orderDetailUC []model.OrderDetail) error {
 	return nil
 }
 
+func (r OrderDetailRepository) FindByIdOrder(orderId string) (*[]model.OrderDetail, error) {
+	details := &[]model.OrderDetail{}
+
+	err := database.DB.Model(&model.OrderDetail{}).Where("order_id = ?", orderId).Preload("Bikes.Category").Find(&details).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return details, nil
+}
+
 func NewOrderDetailRepository(db *gorm.DB) repository.OrderDetailRepository {
 	return OrderDetailRepository{db}
 }
