@@ -1,0 +1,599 @@
+openapi: 3.0.0
+info:
+  title: Go Rent Bike
+  version: 1.0.0
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Customers
+  - name: Renters
+  - name: Categories
+  - name: Bikes
+  - name: Orders
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: User Register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                address: Jl Merapi
+                fullname: User Renter
+                email: arvin@mail.com
+                role: renter
+                password: '123'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: arvin@mail.com
+                password: '123'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /customers/{id}:
+    get:
+      tags:
+        - Customers
+      summary: Get Customer By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 2d272252-7b5d-4f50-85ee-e578e3826510
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Customers
+      summary: Edit Customer By Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                address: Jl Kenari
+                fullname: Arvin Paundra Ardana
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: e54c1383-7d48-4eef-bba7-21d6e6d69506
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Customers
+      summary: Delete Customer By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: e54c1383-7d48-4eef-bba7-21d6e6d69506
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /customers:
+    get:
+      tags:
+        - Customers
+      summary: Get All Customers
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /customers/{id}/histories:
+    get:
+      tags:
+        - Customers
+      summary: Get All User Histories
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 2d272252-7b5d-4f50-85ee-e578e3826510
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /customers/{id}/orders:
+    get:
+      tags:
+        - Customers
+      summary: Get All User Orders
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 2d272252-7b5d-4f50-85ee-e578e3826510
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /customers/{id}/orders/{orderId}:
+    get:
+      tags:
+        - Customers
+      summary: Find User Order By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 2d272252-7b5d-4f50-85ee-e578e3826510
+        - name: orderId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: a405e13e-af92-44da-b967-3d32e4d44e35
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /renters:
+    post:
+      tags:
+        - Renters
+      summary: Renter Register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                user_id: a6e8edcd-f586-418b-be45-24bb0165583a
+                rent_name: Rental Sepeda Sejahtera
+                rent_address: Jl Ketapang
+                description: Ini deskripsi rental
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Renters
+      summary: Get All Renters
+      parameters:
+        - name: rental_name
+          in: query
+          schema:
+            type: string
+          example: rental
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /renters/{id}:
+    get:
+      tags:
+        - Renters
+      summary: Get Renter By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 3dfd9e9f-e8ea-4497-8caf-96898aa509e2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Renters
+      summary: Edit Data Renter By Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                rent_name: Updated Rental Name
+                rent_address: Jl Merapi
+                description: Updated descriptions
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 6732ee23-5277-4e1e-87b0-c804feb460a9
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Renters
+      summary: Delete Renter By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 6732ee23-5277-4e1e-87b0-c804feb460a9
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /renters/{id}/reports:
+    post:
+      tags:
+        - Renters
+      summary: Create Report Renter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                user_id: 2d272252-7b5d-4f50-85ee-e578e3826510
+                title_issue: Tukang tipu
+                body_issue: Dasar tukang tipu ente
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 3dfd9e9f-e8ea-4497-8caf-96898aa509e2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Renters
+      summary: Get All Renter Reports
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 3dfd9e9f-e8ea-4497-8caf-96898aa509e2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /categories:
+    post:
+      tags:
+        - Categories
+      summary: Add New Category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: ''
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Categories
+      summary: Get All Categories
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /categories/{id}:
+    get:
+      tags:
+        - Categories
+      summary: Get Category By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 8ccc270d-6aac-4d8c-9356-ebbc628f4424
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Categories
+      summary: Edit Category By Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Mountain Bike
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 8edaff38-9b1a-419b-9e68-e13595fb25ad
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Categories
+      summary: Delete Category By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 7320a5a6-058e-42a2-8ebd-37f34e416f9e
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /bikes:
+    post:
+      tags:
+        - Bikes
+      summary: Add New Bike
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                renter_id: 3dfd9e9f-e8ea-4497-8caf-96898aa509e2
+                category_id: 8edaff38-9b1a-419b-9e68-e13595fb25ad
+                name: Huffy 26-inch Rock Creek
+                price_per_hour: 15000
+                condition: Great
+                description: Huffy 26-inch Rock Creek a Men's Mountain Bike.
+                is_available: '1'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Bikes
+      summary: Get All Bikes
+      parameters:
+        - name: bike_name
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /bikes/{id}:
+    get:
+      tags:
+        - Bikes
+      summary: Get Bike By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 37b92bf5-fc11-4aa5-bc47-b788c7db736b
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Bikes
+      summary: Edit Data Bike By Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                renter_id: 3dfd9e9f-e8ea-4497-8caf-96898aa509e2
+                category_id: 8edaff38-9b1a-419b-9e68-e13595fb25ad
+                name: Sample Mountain Bike
+                price_per_hour: 45000
+                condition: good
+                description: This is a description of the bike and updated
+                is_available: '0'
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 37b92bf5-fc11-4aa5-bc47-b788c7db736b
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Bikes
+      summary: Delete Bike By Id
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: a339d886-ed59-4c6c-8788-f6ce7a5ac0da
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /bikes/renters/{renterId}:
+    get:
+      tags:
+        - Bikes
+      summary: Get Bikes By Renter
+      parameters:
+        - name: renterId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 3dfd9e9f-e8ea-4497-8caf-96898aa509e2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /bikes/categories/{categoryId}:
+    get:
+      tags:
+        - Bikes
+      summary: Get Bikes By Category
+      parameters:
+        - name: categoryId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 8ccc270d-6aac-4d8c-9356-ebbc628f4424
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /bikes/{id}/reviews:
+    post:
+      tags:
+        - Bikes
+      summary: Create New Bike Review
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                user_id: 2d272252-7b5d-4f50-85ee-e578e3826510
+                rating: 5
+                description: This is very very nice to use.
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 37b92bf5-fc11-4aa5-bc47-b788c7db736b
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: Create New Order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                customer_id: 2d272252-7b5d-4f50-85ee-e578e3826510
+                bike_ids:
+                  - c12cd8ab-d558-4a2f-ab6a-6782915c8aeb
+                  - 6dfa85b9-4c33-4a79-8d51-dce4e77aabca
+                total_hour: 5
+                payment_type: bank_transfer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /orders/{orderId}/return:
+    get:
+      tags:
+        - Orders
+      summary: Return Bike
+      parameters:
+        - name: orderId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: a405e13e-af92-44da-b967-3d32e4d44e35
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
