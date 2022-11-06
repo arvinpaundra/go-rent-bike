@@ -22,7 +22,6 @@ jobs:
         run: go test -v ./...
       - name: Run linter with golangci-lint
         uses: golangci/golangci-lint-action@v3
-        run: golangci-lint run ./...
 
   build:
     runs-on: ubuntu-latest
