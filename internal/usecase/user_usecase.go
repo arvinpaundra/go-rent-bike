@@ -14,7 +14,7 @@ import (
 
 type UserUsecase interface {
 	RegisterUser(userDTO dto.UserDTO) error
-	LoginUser(email string, password string) (*model.User, error)
+	LoginUser(email string, password string) (string, error)
 	FindAllUsers() (*[]model.User, error)
 	FindByIdUser(userId string) (*model.User, error)
 	FindAllUserHistories(userId string) (*[]model.History, error)
@@ -54,14 +54,16 @@ func (u userUsecase) RegisterUser(userDTO dto.UserDTO) error {
 	return nil
 }
 
-func (u userUsecase) LoginUser(email string, password string) (*model.User, error) {
+func (u userUsecase) LoginUser(email string, password string) (string, error) {
 	user, err := u.userRepository.FindByEmailAndPassword(email, password)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return user, nil
+	token, _ := helper.CreateToken(user.ID, user.Role)
+
+	return token, nil
 }
 
 func (u userUsecase) FindAllUsers() (*[]model.User, error) {
