@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/arvinpaundra/go-rent-bike/helper"
 	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
@@ -20,7 +19,7 @@ func NewUserController(userUsecase usecase.UserUsecase) *UserController {
 	return &UserController{userUsecase: userUsecase}
 }
 
-func (u *UserController) HandlerRegister(c echo.Context) error {
+func (h *UserController) HandlerRegister(c echo.Context) error {
 	userDTO := dto.UserDTO{}
 
 	if err := c.Bind(&userDTO); err != nil {
@@ -39,7 +38,7 @@ func (u *UserController) HandlerRegister(c echo.Context) error {
 		})
 	}
 
-	err := u.userUsecase.RegisterUser(userDTO)
+	err := h.userUsecase.RegisterUser(userDTO)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrDataAlreadyExist) {
@@ -64,7 +63,7 @@ func (u *UserController) HandlerRegister(c echo.Context) error {
 	})
 }
 
-func (u *UserController) HandlerLogin(c echo.Context) error {
+func (h *UserController) HandlerLogin(c echo.Context) error {
 	loginDTO := struct {
 		Email    string `json:"email" form:"email"`
 		Password string `json:"password" form:"password"`
@@ -78,7 +77,7 @@ func (u *UserController) HandlerLogin(c echo.Context) error {
 		})
 	}
 
-	user, err := u.userUsecase.LoginUser(loginDTO.Email, loginDTO.Password)
+	token, err := h.userUsecase.LoginUser(loginDTO.Email, loginDTO.Password)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrRecordNotFound) {
@@ -96,8 +95,6 @@ func (u *UserController) HandlerLogin(c echo.Context) error {
 		})
 	}
 
-	token, _ := helper.CreateToken(user.ID, user.Role)
-
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "login success",
@@ -107,8 +104,8 @@ func (u *UserController) HandlerLogin(c echo.Context) error {
 	})
 }
 
-func (u *UserController) HandlerFindAllUsers(c echo.Context) error {
-	users, err := u.userUsecase.FindAllUsers()
+func (h *UserController) HandlerFindAllUsers(c echo.Context) error {
+	users, err := h.userUsecase.FindAllUsers()
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
@@ -127,10 +124,10 @@ func (u *UserController) HandlerFindAllUsers(c echo.Context) error {
 	})
 }
 
-func (u *UserController) HandlerFindUserById(c echo.Context) error {
+func (h *UserController) HandlerFindUserById(c echo.Context) error {
 	userId := c.Param("id")
 
-	user, err := u.userUsecase.FindByIdUser(userId)
+	user, err := h.userUsecase.FindByIdUser(userId)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrRecordNotFound) {
@@ -148,7 +145,7 @@ func (u *UserController) HandlerFindUserById(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusCreated, map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "success get user by id",
 		"data": map[string]*model.User{
@@ -157,10 +154,10 @@ func (u *UserController) HandlerFindUserById(c echo.Context) error {
 	})
 }
 
-func (u *UserController) HandlerFindAllUserHistories(c echo.Context) error {
+func (h *UserController) HandlerFindAllUserHistories(c echo.Context) error {
 	userId := c.Param("id")
 
-	histories, err := u.userUsecase.FindAllUserHistories(userId)
+	histories, err := h.userUsecase.FindAllUserHistories(userId)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrRecordNotFound) {
@@ -211,7 +208,9 @@ func (h *UserController) HandlerFindAllOrdersUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "success get all user orders",
-		"data":    orders,
+		"data": map[string]*[]model.Order{
+			"orders": orders,
+		},
 	})
 }
 
@@ -240,11 +239,13 @@ func (h *UserController) HandlerFindByIdOrderUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "success get order by id order and user",
-		"data":    order,
+		"data": map[string]*model.Order{
+			"order": order,
+		},
 	})
 }
 
-func (u *UserController) HandlerUpdateUser(c echo.Context) error {
+func (h *UserController) HandlerUpdateUser(c echo.Context) error {
 	userId := c.Param("id")
 	userDTO := dto.UserDTO{}
 
@@ -256,7 +257,7 @@ func (u *UserController) HandlerUpdateUser(c echo.Context) error {
 		})
 	}
 
-	err := u.userUsecase.UpdateUser(userId, userDTO)
+	err := h.userUsecase.UpdateUser(userId, userDTO)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrRecordNotFound) {
@@ -281,10 +282,10 @@ func (u *UserController) HandlerUpdateUser(c echo.Context) error {
 	})
 }
 
-func (u *UserController) HandlerDeleteUser(c echo.Context) error {
+func (h *UserController) HandlerDeleteUser(c echo.Context) error {
 	userId := c.Param("id")
 
-	rowAffected, err := u.userUsecase.DeleteUser(userId)
+	rowAffected, err := h.userUsecase.DeleteUser(userId)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrRecordNotFound) {
