@@ -1,0 +1,51 @@
+version: '2.1'
+
+services:
+  db_mysql:
+    image: 'mysql:8.0.31'
+    container_name: 'rent-bike-db'
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql-volume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DBPASSWORD}
+      MYSQL_DATABASE: ${DBNAME}
+    healthcheck:
+      test: ['CMD', 'mysql', '-u', 'root', '-proot', '-e', 'show schemas']
+      interval: 5s
+      retries: 3
+    networks:
+      - rental-bike-net
+
+  app:
+    image: 'arvinpaundra/go-rent-bike:1.0'
+    container_name: 'go-rent-app'
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./.env:/.env
+    env_file:
+      - /.env
+    environment:
+      APP_PORT: ${APP_PORT}
+      DBUSERNAME: ${DBUSERNAME}
+      DBPASSWORD: ${DBPASSWORD}
+      DBADDRESS: ${DBADDRESS}
+      DBNAME: ${DBNAME}
+      JWT_SECRET: ${JWT_SECRET}
+      MIDTRANS_SERVER_KEY_DEV: ${MIDTRANS_SERVER_KEY_DEV}
+      AUTH_STRING: ${AUTH_STRING}
+    restart: on-failure
+    depends_on:
+      db_mysql:
+        condition: service_healthy
+    networks:
+      - rental-bike-net
+
+volumes:
+  mysql-volume:
+
+networks:
+  rental-bike-net:
+    driver: bridge
