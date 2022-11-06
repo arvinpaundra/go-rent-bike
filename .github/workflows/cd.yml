@@ -1,4 +1,4 @@
-name: Run Continuous Deploymanet Golang App
+name: Run Continuous Deployment Go Rent Bike App
 
 on:
   push:
@@ -64,7 +64,7 @@ jobs:
         with:
           host: ec2-52-77-254-97.ap-southeast-1.compute.amazonaws.com
           username: ubuntu
-          key: ${{ secrets.KEY }}
+          key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
             sudo docker stop go-rent-bike-app

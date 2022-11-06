@@ -1,4 +1,4 @@
-name: Run Continuous Integration Golang App
+name: Run Continuous Integration Go Rent Bike App
 
 on:
   push:
