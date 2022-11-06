@@ -32,4 +32,4 @@ jobs:
         with:
           go-version: 1.18
       - name: test build golang
-        run: go build -o ./build/main ./internal/app/main.go
+        run: go build -o ./build/main .
