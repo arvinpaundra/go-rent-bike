@@ -86,14 +86,14 @@ func (u bikeUsecase) FindByIdBike(bikeId string) (*model.Bike, error) {
 func (u bikeUsecase) FindBikesByRenter(renterId string) (map[string]interface{}, error) {
 	var err error
 
-	renter := &model.Renter{}
+	var renter *model.Renter
 	renter, err = u.renterRepository.FindById(renterId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	bikes := &[]model.Bike{}
+	var bikes *[]model.Bike
 	bikes, err = u.bikeRepository.FindByIdRenter(renterId)
 
 	if err != nil {
@@ -111,14 +111,14 @@ func (u bikeUsecase) FindBikesByRenter(renterId string) (map[string]interface{},
 func (u bikeUsecase) FindBikesByCategory(categoryId string) (map[string]interface{}, error) {
 	var err error
 
-	category := &model.Category{}
+	var category *model.Category
 	category, err = u.categoryRepository.FindById(categoryId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	bikes := &[]model.Bike{}
+	var bikes *[]model.Bike
 	bikes, err = u.bikeRepository.FindByIdCategory(categoryId)
 
 	if err != nil {
@@ -135,7 +135,7 @@ func (u bikeUsecase) FindBikesByCategory(categoryId string) (map[string]interfac
 
 func (u bikeUsecase) UpdateBike(bikeId string, bikeDTO dto.BikeDTO) error {
 	var err error
-	bike := &model.Bike{}
+	var bike *model.Bike
 
 	bike, err = u.bikeRepository.FindById(bikeId)
 

@@ -34,7 +34,7 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 	var err error
 
 	// check if customer is exist
-	customer := &model.User{}
+	var customer *model.User
 	customer, err = u.userRepository.FindById(orderDTO.CustomerId)
 
 	if err != nil {
@@ -178,7 +178,7 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 func (u orderUsecase) UpdateRentStatus(orderId string) error {
 	var err error
 
-	order := &model.Order{}
+	var order *model.Order
 	order, err = u.orderRepository.FindById(orderId)
 	if err != nil {
 		return err
@@ -198,7 +198,7 @@ func (u orderUsecase) UpdateRentStatus(orderId string) error {
 		}
 	}
 
-	history := &model.History{}
+	var history *model.History
 	history, err = u.historyRepository.FindByIdOrder(orderId)
 
 	if err != nil {

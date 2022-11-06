@@ -41,14 +41,14 @@ func (u paymentGatewayUsecase) MidtransNotification(orderId string) error {
 		return err
 	}
 
-	payment := &model.Payment{}
+	var payment *model.Payment
 	payment, err = u.paymentRepository.FindById(order.PaymentId)
 
 	if err != nil {
 		return err
 	}
 
-	history := &model.History{}
+	var history *model.History
 	history, err = u.historyRepository.FindByIdOrder(orderId)
 
 	if err != nil {
