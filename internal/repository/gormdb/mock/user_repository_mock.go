@@ -1,4 +1,4 @@
-package mock
+package repo_mock
 
 import (
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
@@ -9,46 +9,38 @@ type UserRepositoryMock struct {
 	Mock mock.Mock
 }
 
-func (u *UserRepositoryMock) Create(user model.User) error {
-	ret := u.Mock.Called(user)
+func (r *UserRepositoryMock) Create(userUC model.User) error {
+	ret := r.Mock.Called(userUC)
 
 	return ret.Error(0)
 }
 
-func (u *UserRepositoryMock) FindByEmailAndPassword(email string, password string) (*model.User, error) {
-	ret := u.Mock.Called(email, password)
-
-	if ret.Get(0) == nil {
-		return nil, ret.Error(1)
-	}
+func (r *UserRepositoryMock) FindByEmailAndPassword(email string, password string) (*model.User, error) {
+	ret := r.Mock.Called(email, password)
 
 	return ret.Get(0).(*model.User), ret.Error(1)
 }
 
-func (u *UserRepositoryMock) FindAll() (*[]model.User, error) {
-	ret := u.Mock.Called()
+func (r *UserRepositoryMock) FindAll() (*[]model.User, error) {
+	ret := r.Mock.Called()
 
 	return ret.Get(0).(*[]model.User), ret.Error(1)
 }
 
-func (u *UserRepositoryMock) FindById(userId string) (*model.User, error) {
-	ret := u.Mock.Called(userId)
-
-	if ret.Get(0) == nil {
-		return nil, ret.Error(1)
-	}
+func (r *UserRepositoryMock) FindById(userId string) (*model.User, error) {
+	ret := r.Mock.Called(userId)
 
 	return ret.Get(0).(*model.User), ret.Error(1)
 }
 
-func (u *UserRepositoryMock) Update(userId string, userUC model.User) error {
-	ret := u.Mock.Called(userId, userUC)
+func (r *UserRepositoryMock) Update(userId string, userUC model.User) error {
+	ret := r.Mock.Called(userId, userUC)
 
 	return ret.Error(0)
 }
 
-func (u *UserRepositoryMock) Delete(userId string) (uint, error) {
-	ret := u.Mock.Called(userId)
+func (r *UserRepositoryMock) Delete(userId string) (uint, error) {
+	ret := r.Mock.Called(userId)
 
 	return ret.Get(0).(uint), ret.Error(1)
 }

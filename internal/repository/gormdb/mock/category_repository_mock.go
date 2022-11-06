@@ -1,4 +1,4 @@
-package mock
+package repo_mock
 
 import (
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
