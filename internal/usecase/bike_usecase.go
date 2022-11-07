@@ -15,8 +15,8 @@ type BikeUsecase interface {
 	CreateNewBikeReview(bikeId string, reviewDTO dto.ReviewDTO) error
 	FindAllBikes(bikeName string) (*[]model.Bike, error)
 	FindByIdBike(bikeId string) (*model.Bike, error)
-	FindBikesByRenter(renterId string) (map[string]interface{}, error)
-	FindBikesByCategory(categoryId string) (map[string]interface{}, error)
+	FindBikesByRenter(renterId string) (*[]model.Bike, error)
+	FindBikesByCategory(categoryId string) (*[]model.Bike, error)
 	UpdateBike(bikeId string, bikeDTO dto.BikeDTO) error
 	DeleteBike(bikeId string) error
 }
@@ -83,54 +83,32 @@ func (u bikeUsecase) FindByIdBike(bikeId string) (*model.Bike, error) {
 	return bike, nil
 }
 
-func (u bikeUsecase) FindBikesByRenter(renterId string) (map[string]interface{}, error) {
-	var err error
+func (u bikeUsecase) FindBikesByRenter(renterId string) (*[]model.Bike, error) {
+	if _, err := u.renterRepository.FindById(renterId); err != nil {
+		return nil, err
+	}
 
-	var renter *model.Renter
-	renter, err = u.renterRepository.FindById(renterId)
+	bikes, err := u.bikeRepository.FindByIdRenter(renterId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var bikes *[]model.Bike
-	bikes, err = u.bikeRepository.FindByIdRenter(renterId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	data := map[string]interface{}{
-		"rental_name": renter.RentName,
-		"bikes":       bikes,
-	}
-
-	return data, nil
+	return bikes, nil
 }
 
-func (u bikeUsecase) FindBikesByCategory(categoryId string) (map[string]interface{}, error) {
-	var err error
+func (u bikeUsecase) FindBikesByCategory(categoryId string) (*[]model.Bike, error) {
+	if _, err := u.categoryRepository.FindById(categoryId); err != nil {
+		return nil, err
+	}
 
-	var category *model.Category
-	category, err = u.categoryRepository.FindById(categoryId)
+	bikes, err := u.bikeRepository.FindByIdCategory(categoryId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var bikes *[]model.Bike
-	bikes, err = u.bikeRepository.FindByIdCategory(categoryId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	data := map[string]interface{}{
-		"category": category.Name,
-		"bikes":    bikes,
-	}
-
-	return data, nil
+	return bikes, nil
 }
 
 func (u bikeUsecase) UpdateBike(bikeId string, bikeDTO dto.BikeDTO) error {
