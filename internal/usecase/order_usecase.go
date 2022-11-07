@@ -158,6 +158,12 @@ func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}
 	// send request to payment gateway
 	snapUrl := u.paymentGatewayRepository.CreateUrlTransactionWithGateway(snapReq)
 
+	// save payments
+	payment.PaymentLink = snapUrl
+	if err := u.paymentRepository.Update(paymentId, payment); err != nil {
+		return nil, err
+	}
+
 	// setup response from my app
 	data := map[string]interface{}{
 		"order_id":       order.ID,
