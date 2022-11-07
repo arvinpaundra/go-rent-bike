@@ -47,7 +47,15 @@ func generateSnapReq(req dto.PaymentGateway) *snap.Request {
 			OrderID:  req.OrderId,
 			GrossAmt: req.GrossAmt,
 		},
-		EnabledPayments: snap.AllSnapPaymentType,
+		EnabledPayments: []snap.SnapPaymentType{
+			snap.PaymentTypeBNIVA,
+			snap.PaymentTypePermataVA,
+			snap.PaymentTypeBCAVA,
+			snap.PaymentTypeBRIVA,
+			snap.PaymentTypeBankTransfer,
+			snap.PaymentTypeGopay,
+			snap.PaymentTypeShopeepay,
+		},
 		CustomerDetail: &midtrans.CustomerDetails{
 			Email: req.Email,
 			Phone: req.Phone,
