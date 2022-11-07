@@ -62,7 +62,7 @@ jobs:
       - name: Login to EC2 instance via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ec2-52-77-254-97.ap-southeast-1.compute.amazonaws.com
+          host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_KEY }}
           port: 22
