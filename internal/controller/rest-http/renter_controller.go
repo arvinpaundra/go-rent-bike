@@ -19,7 +19,7 @@ func NewRenterController(renterUsecase usecase.RenterUsecase) *RenterController 
 	return &RenterController{renterUsecase}
 }
 
-func (r *RenterController) HandlerCreateRenter(c echo.Context) error {
+func (r RenterController) HandlerCreateRenter(c echo.Context) error {
 	renterDTO := dto.RenterDTO{}
 
 	if err := c.Bind(&renterDTO); err != nil {
@@ -92,7 +92,7 @@ func (r RenterController) HandlerCreateReportRenter(c echo.Context) error {
 	})
 }
 
-func (r *RenterController) HandlerFindAllRenters(c echo.Context) error {
+func (r RenterController) HandlerFindAllRenters(c echo.Context) error {
 	search := c.QueryParam("rental_name")
 
 	renters, err := r.renterUsecase.FindAllRenters(search)
@@ -114,7 +114,7 @@ func (r *RenterController) HandlerFindAllRenters(c echo.Context) error {
 	})
 }
 
-func (r *RenterController) HandlerFindRenterById(c echo.Context) error {
+func (r RenterController) HandlerFindRenterById(c echo.Context) error {
 	renterId := c.Param("id")
 
 	renter, err := r.renterUsecase.FindByIdRenter(renterId)
@@ -144,7 +144,7 @@ func (r *RenterController) HandlerFindRenterById(c echo.Context) error {
 	})
 }
 
-func (r *RenterController) HandlerFindAllRenterReports(c echo.Context) error {
+func (r RenterController) HandlerFindAllRenterReports(c echo.Context) error {
 	renterId := c.Param("id")
 
 	reports, err := r.renterUsecase.FindAllRenterReports(renterId)
@@ -174,7 +174,7 @@ func (r *RenterController) HandlerFindAllRenterReports(c echo.Context) error {
 	})
 }
 
-func (r *RenterController) HandlerUpdateRenter(c echo.Context) error {
+func (r RenterController) HandlerUpdateRenter(c echo.Context) error {
 	renterId := c.Param("id")
 	renterDTO := dto.RenterDTO{}
 
@@ -211,7 +211,7 @@ func (r *RenterController) HandlerUpdateRenter(c echo.Context) error {
 	})
 }
 
-func (r *RenterController) HandlerDeleteRenter(c echo.Context) error {
+func (r RenterController) HandlerDeleteRenter(c echo.Context) error {
 	renterId := c.Param("id")
 
 	rowAffected, err := r.renterUsecase.DeleteRenter(renterId)
