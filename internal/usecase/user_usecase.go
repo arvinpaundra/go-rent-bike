@@ -128,6 +128,7 @@ func (u userUsecase) UpdateUser(userId string, userDTO dto.UserDTO) error {
 	user := model.User{
 		Address:   userDTO.Address,
 		Fullname:  userDTO.Fullname,
+		Phone:     userDTO.Phone,
 		UpdatedAt: time.Time{},
 	}
 
