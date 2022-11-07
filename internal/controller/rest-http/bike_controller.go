@@ -110,7 +110,7 @@ func (h *BikeController) HandlerFindByIdBike(c echo.Context) error {
 func (h *BikeController) HandlerFindBikesByRenter(c echo.Context) error {
 	renterId := c.Param("renterId")
 
-	data, err := h.bikeUsecase.FindBikesByRenter(renterId)
+	bikes, err := h.bikeUsecase.FindBikesByRenter(renterId)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrRecordNotFound) {
@@ -132,8 +132,7 @@ func (h *BikeController) HandlerFindBikesByRenter(c echo.Context) error {
 		"status":  "success",
 		"message": "success get bikes by renter",
 		"data": map[string]interface{}{
-			"rental_name": data["rental_name"].(string),
-			"bikes":       data["bikes"].(*[]model.Bike),
+			"bikes": bikes,
 		},
 	})
 }
@@ -141,7 +140,7 @@ func (h *BikeController) HandlerFindBikesByRenter(c echo.Context) error {
 func (h *BikeController) HandlerFindBikesByCategory(c echo.Context) error {
 	categoryId := c.Param("categoryId")
 
-	data, err := h.bikeUsecase.FindBikesByCategory(categoryId)
+	bikes, err := h.bikeUsecase.FindBikesByCategory(categoryId)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrRecordNotFound) {
@@ -163,8 +162,7 @@ func (h *BikeController) HandlerFindBikesByCategory(c echo.Context) error {
 		"status":  "success",
 		"message": "success get all bikes by category",
 		"data": map[string]interface{}{
-			"category": data["category"].(string),
-			"bikes":    data["bikes"].(*[]model.Bike),
+			"bikes": bikes,
 		},
 	})
 }

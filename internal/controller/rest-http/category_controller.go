@@ -42,7 +42,7 @@ func (h *CategoryController) HandlerCreateCategory(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"status":  "success",
-		"message": "sucess create category",
+		"message": "success create category",
 		"data":    nil,
 	})
 }
@@ -156,7 +156,7 @@ func (h *CategoryController) HandlerDeleteCategory(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"status":  "error",
+		"status":  "success",
 		"message": "success delete category by id",
 		"data": map[string]uint{
 			"row_affected": rowAffected,
