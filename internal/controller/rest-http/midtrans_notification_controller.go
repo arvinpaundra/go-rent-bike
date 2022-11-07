@@ -2,7 +2,6 @@ package rest_http
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/arvinpaundra/go-rent-bike/internal"
@@ -24,8 +23,6 @@ func (h *MidtransNotificationController) HandlerNotification(c echo.Context) err
 			"data":    nil,
 		})
 	}
-
-	fmt.Println(notificationPayloads)
 
 	orderId := notificationPayloads["order_id"].(string)
 
