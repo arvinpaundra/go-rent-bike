@@ -2,11 +2,8 @@ package gormdb
 
 import (
 	"errors"
-	"time"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 
-	"github.com/arvinpaundra/go-rent-bike/database"
-	"github.com/arvinpaundra/go-rent-bike/helper"
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
 	"gorm.io/gorm"
@@ -16,16 +13,8 @@ type UserRepository struct {
 	DB *gorm.DB
 }
 
-func (u UserRepository) Create(userUC model.User) error {
-	user := model.User{}
-
-	_ = database.DB.Model(&model.User{}).Where("email = ?", userUC.Email).Take(&user)
-
-	if user.ID != "" {
-		return internal.ErrDataAlreadyExist
-	}
-
-	err := database.DB.Model(&model.User{}).Create(&userUC).Error
+func (r UserRepository) Create(userUC model.User) error {
+	err := r.DB.Model(&model.User{}).Create(&userUC).Error
 
 	if err != nil {
 		return err
@@ -34,28 +23,22 @@ func (u UserRepository) Create(userUC model.User) error {
 	return nil
 }
 
-func (u UserRepository) FindByEmailAndPassword(email string, password string) (*model.User, error) {
+func (r UserRepository) FindByEmail(email string) (*model.User, error) {
 	user := &model.User{}
 
-	err := database.DB.Model(&model.User{}).Where("email = ?", email).Take(&user).Error
+	err := r.DB.Model(&model.User{}).Where("email = ?", email).Take(&user).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, internal.ErrRecordNotFound
-	}
-
-	ok := helper.ComparePassword(user.Password, password)
-
-	if !ok {
-		return nil, internal.ErrRecordNotFound
+		return nil, pkg.ErrRecordNotFound
 	}
 
 	return user, nil
 }
 
-func (u UserRepository) FindAll() (*[]model.User, error) {
+func (r UserRepository) FindAll() (*[]model.User, error) {
 	users := &[]model.User{}
 
-	err := database.DB.Model(&model.User{}).Omit("password").Find(&users).Error
+	err := r.DB.Model(&model.User{}).Omit("password").Find(&users).Error
 
 	if err != nil {
 		return nil, err
@@ -64,14 +47,14 @@ func (u UserRepository) FindAll() (*[]model.User, error) {
 	return users, nil
 }
 
-func (u UserRepository) FindById(userId string) (*model.User, error) {
+func (r UserRepository) FindById(userId string) (*model.User, error) {
 	user := &model.User{}
 
-	err := database.DB.Model(&model.User{}).Where("id = ?", userId).Omit("password").Take(&user).Error
+	err := r.DB.Model(&model.User{}).Where("id = ?", userId).Omit("password").Take(&user).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, internal.ErrRecordNotFound
+			return nil, pkg.ErrRecordNotFound
 		}
 
 		return nil, err
@@ -80,30 +63,8 @@ func (u UserRepository) FindById(userId string) (*model.User, error) {
 	return user, nil
 }
 
-func (u UserRepository) Update(userId string, userUC model.User) error {
-	user := model.User{}
-
-	if msg := database.DB.Model(&model.User{}).Where("id = ?", userId).Take(&user).Error; msg != nil {
-		if errors.Is(msg, gorm.ErrRecordNotFound) {
-			return internal.ErrRecordNotFound
-		}
-
-		return msg
-	}
-
-	updatedUser := model.User{
-		ID:        userId,
-		Fullname:  userUC.Fullname,
-		Phone:     userUC.Phone,
-		Address:   userUC.Address,
-		Role:      user.Role,
-		Email:     user.Email,
-		Password:  user.Password,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: time.Now(),
-	}
-
-	err := database.DB.Model(&model.User{}).Where("id = ?", userId).Save(&updatedUser).Error
+func (r UserRepository) Update(userId string, userUC model.User) error {
+	err := r.DB.Model(&model.User{}).Where("id = ?", userId).Updates(&userUC).Error
 
 	if err != nil {
 		return err
@@ -112,24 +73,14 @@ func (u UserRepository) Update(userId string, userUC model.User) error {
 	return nil
 }
 
-func (u UserRepository) Delete(userId string) (uint, error) {
-	user := model.User{}
-
-	if msg := database.DB.Model(&model.User{}).Where("id = ?", userId).Take(&user).Error; msg != nil {
-		if errors.Is(msg, gorm.ErrRecordNotFound) {
-			return 0, internal.ErrRecordNotFound
-		}
-
-		return 0, msg
-	}
-
-	err := database.DB.Model(&model.User{}).Where("id = ?", userId).Delete(&model.User{}).Error
+func (r UserRepository) Delete(userId string) error {
+	err := r.DB.Model(&model.User{}).Where("id = ?", userId).Delete(&model.User{}).Error
 
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	return 1, nil
+	return nil
 }
 
 func NewUserRepositoryGorm(db *gorm.DB) repository.UserRepository {
