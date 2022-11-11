@@ -2,9 +2,9 @@ package rest_http
 
 import (
 	"errors"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 	"net/http"
 
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/usecase"
@@ -33,7 +33,7 @@ func (h *BikeController) HandlerAddNewBike(c echo.Context) error {
 	err := h.bikeUsecase.CreateNewBike(bikeDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "renter or category not found",
@@ -83,7 +83,7 @@ func (h *BikeController) HandlerFindByIdBike(c echo.Context) error {
 	bike, err := h.bikeUsecase.FindByIdBike(bikeId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "bike not found",
@@ -113,7 +113,7 @@ func (h *BikeController) HandlerFindBikesByRenter(c echo.Context) error {
 	bikes, err := h.bikeUsecase.FindBikesByRenter(renterId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "renter not found",
@@ -143,7 +143,7 @@ func (h *BikeController) HandlerFindBikesByCategory(c echo.Context) error {
 	bikes, err := h.bikeUsecase.FindBikesByCategory(categoryId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "category not found",
@@ -182,7 +182,7 @@ func (h *BikeController) HandlerUpdateBike(c echo.Context) error {
 	err := h.bikeUsecase.UpdateBike(bikeId, bikeDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "renter or category or bike are not found",
@@ -210,7 +210,7 @@ func (h *BikeController) HandlerDeleteBike(c echo.Context) error {
 	err := h.bikeUsecase.DeleteBike(bikeId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "bike not found",
@@ -247,7 +247,7 @@ func (h *BikeController) HandlerCreateNewBikeReview(c echo.Context) error {
 	err := h.bikeUsecase.CreateNewBikeReview(bikeId, reviewDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "bike or customer not found",

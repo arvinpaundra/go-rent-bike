@@ -2,9 +2,9 @@ package rest_http
 
 import (
 	"errors"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 	"net/http"
 
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/usecase"
 	"github.com/labstack/echo/v4"
@@ -32,7 +32,7 @@ func (h *OrderController) HandlerCreateNewOrder(c echo.Context) error {
 	data, err := h.orderUsecase.CreateOrder(orderDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "record not found",
@@ -60,7 +60,7 @@ func (h *OrderController) HandlerReturnBike(c echo.Context) error {
 	err := h.orderUsecase.UpdateRentStatus(orderId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "order not found",

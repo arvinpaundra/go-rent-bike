@@ -2,9 +2,9 @@ package rest_http
 
 import (
 	"errors"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 	"net/http"
 
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/usecase"
 	"github.com/labstack/echo/v4"
 )
@@ -19,7 +19,7 @@ func (h *MidtransNotificationController) HandlerNotification(c echo.Context) err
 	if err := c.Bind(&notificationPayloads); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status":  "error",
-			"message": err.Error(),
+			"message": "fill all required fields",
 			"data":    nil,
 		})
 	}
@@ -29,7 +29,7 @@ func (h *MidtransNotificationController) HandlerNotification(c echo.Context) err
 	err := h.paymentGatewayUsecase.MidtransNotification(orderId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "order not found",
