@@ -2,9 +2,8 @@ package gormdb
 
 import (
 	"errors"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 
-	"github.com/arvinpaundra/go-rent-bike/database"
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
 	"gorm.io/gorm"
@@ -15,7 +14,7 @@ type PaymentRepository struct {
 }
 
 func (r PaymentRepository) Create(paymentUC model.Payment) error {
-	err := database.DB.Model(&model.Payment{}).Create(&paymentUC).Error
+	err := r.DB.Model(&model.Payment{}).Create(&paymentUC).Error
 
 	if err != nil {
 		return err
@@ -27,11 +26,11 @@ func (r PaymentRepository) Create(paymentUC model.Payment) error {
 func (r PaymentRepository) FindById(paymentId string) (*model.Payment, error) {
 	payment := &model.Payment{}
 
-	err := database.DB.Model(&model.Payment{}).Where("id = ?", paymentId).Take(&payment).Error
+	err := r.DB.Model(&model.Payment{}).Where("id = ?", paymentId).Take(&payment).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, internal.ErrRecordNotFound
+			return nil, pkg.ErrRecordNotFound
 		}
 
 		return nil, err
@@ -41,7 +40,7 @@ func (r PaymentRepository) FindById(paymentId string) (*model.Payment, error) {
 }
 
 func (r PaymentRepository) Update(paymentId string, paymentUC model.Payment) error {
-	err := database.DB.Model(&model.Payment{}).Where("id = ?", paymentId).Save(&paymentUC).Error
+	err := r.DB.Model(&model.Payment{}).Where("id = ?", paymentId).Updates(&paymentUC).Error
 
 	if err != nil {
 		return err

@@ -2,9 +2,8 @@ package gormdb
 
 import (
 	"errors"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 
-	"github.com/arvinpaundra/go-rent-bike/database"
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
 	"gorm.io/gorm"
@@ -15,7 +14,7 @@ type HistoryRepository struct {
 }
 
 func (r HistoryRepository) Create(historyUC model.History) error {
-	err := database.DB.Model(&model.History{}).Create(&historyUC).Error
+	err := r.DB.Model(&model.History{}).Create(&historyUC).Error
 
 	if err != nil {
 		return err
@@ -27,11 +26,11 @@ func (r HistoryRepository) Create(historyUC model.History) error {
 func (r HistoryRepository) FindAll(userId string) (*[]model.History, error) {
 	histories := &[]model.History{}
 
-	err := database.DB.Model(&model.History{}).Preload("Order", "user_id = ?", userId).Find(&histories).Error
+	err := r.DB.Model(&model.History{}).Preload("Order", "user_id = ?", userId).Find(&histories).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, internal.ErrRecordNotFound
+			return nil, pkg.ErrRecordNotFound
 		}
 
 		return nil, err
@@ -43,11 +42,11 @@ func (r HistoryRepository) FindAll(userId string) (*[]model.History, error) {
 func (r HistoryRepository) FindByIdOrder(orderId string) (*model.History, error) {
 	history := &model.History{}
 
-	err := database.DB.Model(&model.History{}).Where("order_id = ?", orderId).Take(&history).Error
+	err := r.DB.Model(&model.History{}).Where("order_id = ?", orderId).Take(&history).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, internal.ErrRecordNotFound
+			return nil, pkg.ErrRecordNotFound
 		}
 
 		return nil, err
@@ -57,7 +56,7 @@ func (r HistoryRepository) FindByIdOrder(orderId string) (*model.History, error)
 }
 
 func (r HistoryRepository) Update(orderId string, historyUC model.History) error {
-	err := database.DB.Model(&model.History{}).Where("order_id = ?", orderId).Save(&historyUC).Error
+	err := r.DB.Model(&model.History{}).Where("order_id = ?", orderId).Updates(&historyUC).Error
 
 	if err != nil {
 		return err
