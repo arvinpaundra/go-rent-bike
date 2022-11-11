@@ -6,7 +6,6 @@ import (
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
-	"github.com/arvinpaundra/go-rent-bike/internal/repository/gormdb"
 	"github.com/google/uuid"
 )
 
@@ -17,13 +16,13 @@ type RenterUsecase interface {
 	FindByIdRenter(renterId string) (*model.Renter, error)
 	FindAllRenterReports(renterId string) (*[]model.Report, error)
 	UpdateRenter(renterId string, renterDTO dto.RenterDTO) error
-	DeleteRenter(renterId string) (uint, error)
+	DeleteRenter(renterId string) error
 }
 
 type renterUsecase struct {
 	renterRepository repository.RenterRepository
-	userRepository   gormdb.UserRepository
-	reportRepository gormdb.ReportRepository
+	userRepository   repository.UserRepository
+	reportRepository repository.ReportRepository
 }
 
 func (r renterUsecase) CreateRenter(renterDTO dto.RenterDTO) error {
@@ -109,13 +108,26 @@ func (r renterUsecase) FindAllRenterReports(renterId string) (*[]model.Report, e
 }
 
 func (r renterUsecase) UpdateRenter(renterId string, renterDTO dto.RenterDTO) error {
-	renter := model.Renter{
+	var err error
+
+	var renter *model.Renter
+	renter, err = r.renterRepository.FindById(renterId)
+
+	if err != nil {
+		return err
+	}
+
+	renterUC := model.Renter{
+		ID:          renter.ID,
+		UserId:      renter.UserId,
 		RentName:    renterDTO.RentName,
 		RentAddress: renterDTO.RentAddress,
 		Description: renterDTO.Description,
+		CreatedAt:   renter.CreatedAt,
+		UpdatedAt:   time.Now(),
 	}
 
-	err := r.renterRepository.Update(renterId, renter)
+	err = r.renterRepository.Update(renterId, renterUC)
 
 	if err != nil {
 		return err
@@ -124,16 +136,28 @@ func (r renterUsecase) UpdateRenter(renterId string, renterDTO dto.RenterDTO) er
 	return nil
 }
 
-func (r renterUsecase) DeleteRenter(renterId string) (uint, error) {
-	rowAffected, err := r.renterRepository.Delete(renterId)
-
-	if err != nil {
-		return rowAffected, err
+func (r renterUsecase) DeleteRenter(renterId string) error {
+	if _, err := r.renterRepository.FindById(renterId); err != nil {
+		return err
 	}
 
-	return rowAffected, nil
+	err := r.renterRepository.Delete(renterId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func NewRenterUsecase(renterRepo repository.RenterRepository) RenterUsecase {
-	return renterUsecase{renterRepository: renterRepo}
+func NewRenterUsecase(
+	renterRepo repository.RenterRepository,
+	userRepo repository.UserRepository,
+	reportRepo repository.ReportRepository,
+) RenterUsecase {
+	return renterUsecase{
+		renterRepository: renterRepo,
+		userRepository:   userRepo,
+		reportRepository: reportRepo,
+	}
 }

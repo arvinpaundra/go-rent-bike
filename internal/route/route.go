@@ -14,22 +14,46 @@ import (
 func New(db *gorm.DB, e *echo.Echo) {
 	v1 := e.Group("/api/v1")
 
+	// inject repository with db
+	userRepository := gormdb.NewUserRepositoryGorm(db)
+	renterRepository := gormdb.NewRenterRepositoryGorm(db)
+	categoryRepository := gormdb.NewCategoryRepositoryGorm(db)
+	bikeRepository := gormdb.NewBikeRepositoryGorm(db)
+	orderRepository := gormdb.NewOrderRepository(db)
+	orderDetailRepository := gormdb.NewOrderDetailRepository(db)
+	historyRepository := gormdb.NewHistoryRepository(db)
+	reportRepository := gormdb.NewReportRepository(db)
+	reviewRepository := gormdb.NewReviewRepositoryGorm(db)
+	paymentRepository := gormdb.NewPaymentRepository(db)
+
+	// inject usecase with repository
+	userUsecase := usecase.NewUserUsecase(userRepository, historyRepository, orderRepository)
+	renterUsecase := usecase.NewRenterUsecase(renterRepository, userRepository, reportRepository)
+	categoryUsecase := usecase.NewCategoryUsecase(categoryRepository)
+	bikeUsecase := usecase.NewBikeUsecase(bikeRepository, renterRepository, categoryRepository, userRepository, reviewRepository)
+	orderUsecase := usecase.NewOrderUsecase(
+		orderRepository,
+		orderDetailRepository,
+		userRepository,
+		bikeRepository,
+		paymentRepository,
+		historyRepository,
+	)
+
 	// midtrans notif
-	paymentGatewayUsecase := usecase.NewPaymentGatewayUsecase()
+	paymentGatewayUsecase := usecase.NewPaymentGatewayUsecase(orderRepository, paymentRepository, historyRepository)
 	paymentGatewayController := controller.NewMidtransNotificationController(paymentGatewayUsecase)
 
 	v1.POST("/webhook/midtrans", paymentGatewayController.HandlerNotification)
 
 	//	user auth
-	userRepository := gormdb.NewUserRepositoryGorm(db)
-	userUsecase := usecase.NewUserUsecase(userRepository)
 	userController := controller.NewUserController(userUsecase)
 
-	// customer
 	auth := v1.Group("/auth")
 	auth.POST("/register", userController.HandlerRegister)
 	auth.POST("/login", userController.HandlerLogin)
 
+	// customer
 	u := v1.Group("/customers", middleware.JWT([]byte(configs.Cfg.JWTSecret)))
 	u.GET("", userController.HandlerFindAllUsers)
 	u.GET("/:id/histories", userController.HandlerFindAllUserHistories)
@@ -40,8 +64,6 @@ func New(db *gorm.DB, e *echo.Echo) {
 	u.DELETE("/:id", userController.HandlerDeleteUser)
 
 	// renter
-	renterRepository := gormdb.NewRenterRepositoryGorm(db)
-	renterUsecase := usecase.NewRenterUsecase(renterRepository)
 	renterController := controller.NewRenterController(renterUsecase)
 
 	r := v1.Group("/renters")
@@ -54,8 +76,6 @@ func New(db *gorm.DB, e *echo.Echo) {
 	r.DELETE("/:id", renterController.HandlerDeleteRenter, middleware.JWT([]byte(configs.Cfg.JWTSecret)), mddlwrs.CheckIsRenter)
 
 	// category
-	categoryRepository := gormdb.NewCategoryRepositoryGorm(db)
-	categoryUsecase := usecase.NewCategoryUsecase(categoryRepository)
 	categoryController := controller.NewCategoryController(categoryUsecase)
 
 	c := v1.Group("/categories")
@@ -66,8 +86,6 @@ func New(db *gorm.DB, e *echo.Echo) {
 	c.DELETE("/:id", categoryController.HandlerDeleteCategory, middleware.JWT([]byte(configs.Cfg.JWTSecret)), mddlwrs.CheckIsRenter)
 
 	// bike
-	bikeRepository := gormdb.NewBikeRepositoryGorm(db)
-	bikeUsecase := usecase.NewBikeUsecase(bikeRepository)
 	bikeController := controller.NewBikeController(bikeUsecase)
 
 	b := v1.Group("/bikes")
@@ -81,8 +99,6 @@ func New(db *gorm.DB, e *echo.Echo) {
 	b.POST("/:id/reviews", bikeController.HandlerCreateNewBikeReview, middleware.JWT([]byte(configs.Cfg.JWTSecret)))
 
 	// order
-	orderRepository := gormdb.NewOrderRepository(db)
-	orderUsecase := usecase.NewOrderUsecase(orderRepository)
 	orderController := controller.NewOrderController(orderUsecase)
 
 	o := v1.Group("/orders", middleware.JWT([]byte(configs.Cfg.JWTSecret)))

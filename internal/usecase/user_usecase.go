@@ -3,13 +3,14 @@ package usecase
 import (
 	"time"
 
+	"github.com/arvinpaundra/go-rent-bike/pkg"
+
 	"github.com/arvinpaundra/go-rent-bike/helper"
 	"github.com/google/uuid"
 
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
-	"github.com/arvinpaundra/go-rent-bike/internal/repository/gormdb"
 )
 
 type UserUsecase interface {
@@ -21,19 +22,25 @@ type UserUsecase interface {
 	FindAllOrdersUser(userId string) (*[]model.Order, error)
 	FindByIdOrderUser(orderId string) (*model.Order, error)
 	UpdateUser(userId string, userDTO dto.UserDTO) error
-	DeleteUser(userId string) (uint, error)
+	DeleteUser(userId string) error
 }
 
 type userUsecase struct {
 	userRepository    repository.UserRepository
-	historyRepository gormdb.HistoryRepository
-	orderRepository   gormdb.OrderRepository
+	historyRepository repository.HistoryRepository
+	orderRepository   repository.OrderRepository
 }
 
 func (u userUsecase) RegisterUser(userDTO dto.UserDTO) error {
+	user, _ := u.userRepository.FindByEmail(userDTO.Email)
+
+	if user != nil {
+		return pkg.ErrDataAlreadyExist
+	}
+
 	hashedPassword, _ := helper.HashPassword(userDTO.Password)
 
-	user := model.User{
+	userUC := model.User{
 		ID:        uuid.NewString(),
 		Fullname:  userDTO.Fullname,
 		Phone:     userDTO.Phone,
@@ -45,7 +52,7 @@ func (u userUsecase) RegisterUser(userDTO dto.UserDTO) error {
 		UpdatedAt: time.Now(),
 	}
 
-	err := u.userRepository.Create(user)
+	err := u.userRepository.Create(userUC)
 
 	if err != nil {
 		return err
@@ -55,10 +62,16 @@ func (u userUsecase) RegisterUser(userDTO dto.UserDTO) error {
 }
 
 func (u userUsecase) LoginUser(email string, password string) (string, error) {
-	user, err := u.userRepository.FindByEmailAndPassword(email, password)
+	user, err := u.userRepository.FindByEmail(email)
 
 	if err != nil {
 		return "", err
+	}
+
+	ok := helper.ComparePassword(user.Password, password)
+
+	if !ok {
+		return "", pkg.ErrRecordNotFound
 	}
 
 	token, _ := helper.CreateToken(user.ID, user.Role)
@@ -125,14 +138,22 @@ func (u userUsecase) FindByIdOrderUser(orderId string) (*model.Order, error) {
 }
 
 func (u userUsecase) UpdateUser(userId string, userDTO dto.UserDTO) error {
-	user := model.User{
-		Address:   userDTO.Address,
-		Fullname:  userDTO.Fullname,
-		Phone:     userDTO.Phone,
-		UpdatedAt: time.Time{},
+	var err error
+
+	_, err = u.FindByIdUser(userId)
+
+	if err != nil {
+		return err
 	}
 
-	err := u.userRepository.Update(userId, user)
+	userUC := model.User{
+		Fullname:  userDTO.Fullname,
+		Phone:     userDTO.Phone,
+		Address:   userDTO.Address,
+		UpdatedAt: time.Now(),
+	}
+
+	err = u.userRepository.Update(userId, userUC)
 
 	if err != nil {
 		return err
@@ -141,16 +162,24 @@ func (u userUsecase) UpdateUser(userId string, userDTO dto.UserDTO) error {
 	return nil
 }
 
-func (u userUsecase) DeleteUser(userId string) (uint, error) {
-	rowAffected, err := u.userRepository.Delete(userId)
+func (u userUsecase) DeleteUser(userId string) error {
+	err := u.userRepository.Delete(userId)
 
 	if err != nil {
-		return rowAffected, err
+		return err
 	}
 
-	return rowAffected, nil
+	return nil
 }
 
-func NewUserUsecase(userRepo repository.UserRepository) UserUsecase {
-	return userUsecase{userRepository: userRepo}
+func NewUserUsecase(
+	userRepo repository.UserRepository,
+	historyRepo repository.HistoryRepository,
+	orderRepo repository.OrderRepository,
+) UserUsecase {
+	return userUsecase{
+		userRepository:    userRepo,
+		historyRepository: historyRepo,
+		orderRepository:   orderRepo,
+	}
 }
