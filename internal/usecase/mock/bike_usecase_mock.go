@@ -1,4 +1,4 @@
-package mock
+package usecasemock
 
 import (
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"

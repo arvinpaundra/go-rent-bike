@@ -1,4 +1,4 @@
-package mock
+package usecasemock
 
 import (
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
@@ -34,8 +34,8 @@ func (u *CategoryUsecaseMock) UpdateCategory(categoryId string, categoryDTO dto.
 	return ret.Error(0)
 }
 
-func (u *CategoryUsecaseMock) DeleteCategory(categoryId string) (uint, error) {
+func (u *CategoryUsecaseMock) DeleteCategory(categoryId string) error {
 	ret := u.Mock.Called(categoryId)
 
-	return ret.Get(0).(uint), ret.Error(1)
+	return ret.Error(0)
 }

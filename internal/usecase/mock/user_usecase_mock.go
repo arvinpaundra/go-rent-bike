@@ -1,4 +1,4 @@
-package mock
+package usecasemock
 
 import (
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
@@ -58,8 +58,8 @@ func (u *UserUsecaseMock) UpdateUser(userId string, userDTO dto.UserDTO) error {
 	return ret.Error(0)
 }
 
-func (u *UserUsecaseMock) DeleteUser(userId string) (uint, error) {
+func (u *UserUsecaseMock) DeleteUser(userId string) error {
 	ret := u.Mock.Called(userId)
 
-	return ret.Get(0).(uint), ret.Error(1)
+	return ret.Error(0)
 }
