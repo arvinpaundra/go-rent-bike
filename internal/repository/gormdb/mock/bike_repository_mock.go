@@ -1,4 +1,4 @@
-package repo_mock
+package repomock
 
 import (
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
@@ -6,8 +6,7 @@ import (
 )
 
 type BikeRepositoryMock struct {
-	Mock             mock.Mock
-	RenterRepository RenterRepositoryMock
+	Mock mock.Mock
 }
 
 func (r *BikeRepositoryMock) Create(bikeUC model.Bike) error {
