@@ -3,39 +3,46 @@ package rest_http
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/arvinpaundra/go-rent-bike/internal/model"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
+	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	usecasemock "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 )
 
-type suiteCategory struct {
+type suiteRenter struct {
 	suite.Suite
-	handler *CategoryController
-	mocking *usecasemock.CategoryUsecaseMock
+	handler *RenterController
+	mocking *usecasemock.RenterUsecaseMock
 }
 
-func (s *suiteCategory) SetupSuite() {
-	mock := &usecasemock.CategoryUsecaseMock{}
+func (s *suiteRenter) SetupSuite() {
+	mock := &usecasemock.RenterUsecaseMock{}
 	s.mocking = mock
 
-	s.handler = &CategoryController{
-		categoryUsecase: s.mocking,
+	s.handler = &RenterController{
+		renterUsecase: s.mocking,
 	}
 }
 
-func (s *suiteCategory) TestHandlerCreateCategory() {
-	categoryDTO := dto.CategoryDTO{
-		Name: "Mountain Bike",
+func (s *suiteRenter) TestHandlerCreateRenter() {
+
+}
+
+func (s *suiteRenter) TestHandlerCreateReportRenter() {
+	renterId := "e1c74c4a-2d34-4ba3-8742-73b0130afae5"
+	reportDTO := dto.ReportDTO{
+		UserId:     "cc3c5658-2e2a-4f83-bf0a-5adeab34f036",
+		TitleIssue: "Title Issue",
+		BodyIssue:  "Body issue.",
 	}
 
-	s.mocking.Mock.On("CreateCategory", categoryDTO).Return(nil)
+	s.mocking.Mock.On("CreateReportRenter", renterId, reportDTO).Return(nil)
 
 	testCases := []struct {
 		Name               string
@@ -47,31 +54,35 @@ func (s *suiteCategory) TestHandlerCreateCategory() {
 		ExpectedResult     map[string]interface{}
 	}{
 		{
-			Name:               "success create category",
+			Name:               "success create new renter",
 			ExpectedStatusCode: http.StatusCreated,
 			Method:             "POST",
 			Header: map[string]string{
 				"Content-Type": "application/json",
 			},
 			Body: map[string]interface{}{
-				"name": "Mountain Bike",
+				"user_id":     "cc3c5658-2e2a-4f83-bf0a-5adeab34f036",
+				"title_issue": "Title Issue",
+				"body_issue":  "Body issue.",
 			},
 			HasReturnBody: true,
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
-				"message": "success create category",
+				"message": "success report renter",
 				"data":    nil,
 			},
 		},
 		{
-			Name:               "failed wrong content-type",
+			Name:               "failed wrong content type",
 			ExpectedStatusCode: http.StatusBadRequest,
 			Method:             "POST",
 			Header: map[string]string{
 				"Content-Type": "text/plain",
 			},
 			Body: map[string]interface{}{
-				"name": "Mountain Bike",
+				"user_id":     "cc3c5658-2e2a-4f83-bf0a-5adeab34f036",
+				"title_issue": "Title Issue",
+				"body_issue":  "Body issue.",
 			},
 			HasReturnBody: true,
 			ExpectedResult: map[string]interface{}{
@@ -85,14 +96,17 @@ func (s *suiteCategory) TestHandlerCreateCategory() {
 	for _, v := range testCases {
 		s.T().Run(v.Name, func(t *testing.T) {
 			res, _ := json.Marshal(v.Body)
-			r := httptest.NewRequest(v.Method, "/categories", bytes.NewReader(res))
+			r := httptest.NewRequest(v.Method, "/renters", bytes.NewReader(res))
 			w := httptest.NewRecorder()
 
 			e := echo.New()
 			ctx := e.NewContext(r, w)
 			ctx.Request().Header.Set("Content-Type", v.Header["Content-Type"])
+			ctx.SetPath("/:id/reports")
+			ctx.SetParamNames("id")
+			ctx.SetParamValues(renterId)
 
-			err := s.handler.HandlerCreateCategory(ctx)
+			err := s.handler.HandlerCreateReportRenter(ctx)
 			s.NoError(err)
 
 			s.Equal(v.ExpectedStatusCode, w.Result().StatusCode)
@@ -109,23 +123,20 @@ func (s *suiteCategory) TestHandlerCreateCategory() {
 	}
 }
 
-func (s *suiteCategory) TestHandlerFindAllCategories() {
-	categories := &[]model.Category{
+func (s *suiteRenter) TestHandlerFindAllRenters() {
+	renters := &[]model.Renter{
 		{
-			ID:        "8ad58074-228c-430d-918e-01105cc084fa",
-			Name:      "Mountain Bike",
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		},
-		{
-			ID:        "8ad58074-228c-430d-918e-01105cc084fa",
-			Name:      "Fixie",
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			ID:          "e1c74c4a-2d34-4ba3-8742-73b0130afae5",
+			UserId:      "cc3c5658-2e2a-4f83-bf0a-5adeab34f036",
+			RentName:    "Twins' Brother Bike Rental",
+			RentAddress: "Jl Morioh",
+			Description: "Full with description texts",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
 		},
 	}
 
-	s.mocking.Mock.On("FindAllCategories").Return(categories, nil)
+	s.mocking.Mock.On("FindAllRenters", "").Return(renters, nil)
 
 	testCases := []struct {
 		Name               string
@@ -137,15 +148,15 @@ func (s *suiteCategory) TestHandlerFindAllCategories() {
 		ExpectedResult     map[string]interface{}
 	}{
 		{
-			Name:               "success get categories",
+			Name:               "success get renters",
 			ExpectedStatusCode: http.StatusOK,
 			Method:             "GET",
 			HasReturnBody:      true,
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
-				"message": "success get all categories",
+				"message": "success get all renters",
 				"data": map[string]interface{}{
-					"categories": categories,
+					"renters": renters,
 				},
 			},
 		},
@@ -153,13 +164,13 @@ func (s *suiteCategory) TestHandlerFindAllCategories() {
 
 	for _, v := range testCases {
 		s.T().Run(v.Name, func(t *testing.T) {
-			r := httptest.NewRequest(v.Method, "/categories", nil)
+			r := httptest.NewRequest(v.Method, "/renters", nil)
 			w := httptest.NewRecorder()
 
 			e := echo.New()
 			ctx := e.NewContext(r, w)
 
-			err := s.handler.HandlerFindAllCategories(ctx)
+			err := s.handler.HandlerFindAllRenters(ctx)
 			s.NoError(err)
 
 			s.Equal(v.ExpectedStatusCode, w.Result().StatusCode)
@@ -170,29 +181,27 @@ func (s *suiteCategory) TestHandlerFindAllCategories() {
 				s.NoError(err)
 
 				data := resp["data"].(map[string]interface{})
-				categories := data["categories"].([]interface{})
+				renters := data["renters"].([]interface{})
 
-				expectRes := v.ExpectedResult["data"].(map[string]interface{})
-				expectCategories := expectRes["categories"].(*[]model.Category)
-
-				s.NotEmpty(categories)
-				s.NotEmpty(expectCategories)
+				s.NotNil(renters)
 			}
 		})
 	}
 }
 
-func (s *suiteCategory) TestHandlerFindCategoryById() {
-	categoryId := "8ad58074-228c-430d-918e-01105cc084fa"
-
-	category := &model.Category{
-		ID:        "8ad58074-228c-430d-918e-01105cc084fa",
-		Name:      "Mountain Bike",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+func (s *suiteRenter) TestHandlerFindRenterById() {
+	renterId := "e1c74c4a-2d34-4ba3-8742-73b0130afae5"
+	renter := &model.Renter{
+		ID:          "e1c74c4a-2d34-4ba3-8742-73b0130afae5",
+		UserId:      "cc3c5658-2e2a-4f83-bf0a-5adeab34f036",
+		RentName:    "Twins' Brother Bike Rental",
+		RentAddress: "Jl Morioh",
+		Description: "Full with description texts",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 
-	s.mocking.Mock.On("FindByIdCategory", categoryId).Return(category, nil)
+	s.mocking.Mock.On("FindByIdRenter", "e1c74c4a-2d34-4ba3-8742-73b0130afae5").Return(renter, nil)
 
 	testCases := []struct {
 		Name               string
@@ -204,15 +213,15 @@ func (s *suiteCategory) TestHandlerFindCategoryById() {
 		ExpectedResult     map[string]interface{}
 	}{
 		{
-			Name:               "success get categories",
+			Name:               "success get renter by id",
 			ExpectedStatusCode: http.StatusOK,
 			Method:             "GET",
 			HasReturnBody:      true,
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
-				"message": "success get category by id",
+				"message": "success get all renters",
 				"data": map[string]interface{}{
-					"category": category,
+					"renter": renter,
 				},
 			},
 		},
@@ -220,16 +229,16 @@ func (s *suiteCategory) TestHandlerFindCategoryById() {
 
 	for _, v := range testCases {
 		s.T().Run(v.Name, func(t *testing.T) {
-			r := httptest.NewRequest(v.Method, "/categories", nil)
+			r := httptest.NewRequest(v.Method, "/renters", nil)
 			w := httptest.NewRecorder()
 
 			e := echo.New()
 			ctx := e.NewContext(r, w)
 			ctx.SetPath("/:id")
 			ctx.SetParamNames("id")
-			ctx.SetParamValues(categoryId)
+			ctx.SetParamValues(renterId)
 
-			err := s.handler.HandlerFindCategoryById(ctx)
+			err := s.handler.HandlerFindRenterById(ctx)
 			s.NoError(err)
 
 			s.Equal(v.ExpectedStatusCode, w.Result().StatusCode)
@@ -240,26 +249,93 @@ func (s *suiteCategory) TestHandlerFindCategoryById() {
 				s.NoError(err)
 
 				data := resp["data"].(map[string]interface{})
-				category := data["category"].(map[string]interface{})
+				renter := data["renter"]
 
-				expectRes := v.ExpectedResult["data"].(map[string]interface{})
-				expectCategory := expectRes["category"].(*model.Category)
-
-				s.Equal(expectCategory.ID, category["id"])
-				s.Equal(expectCategory.Name, category["name"])
+				s.NotNil(renter)
 			}
 		})
 	}
 }
 
-func (s *suiteCategory) TestHandlerUpdateCategory() {
-	categoryId := "8ad58074-228c-430d-918e-01105cc084fa"
-
-	categoryDTO := dto.CategoryDTO{
-		Name: "Fixie",
+func (s *suiteRenter) TestHandlerFindAllRenterReports() {
+	renterId := "e1c74c4a-2d34-4ba3-8742-73b0130afae5"
+	reports := &[]model.Report{
+		{
+			ID:         "2ce20f26-32e6-4b22-ad0e-49ee2f11a0c0",
+			RenterId:   "e1c74c4a-2d34-4ba3-8742-73b0130afae5",
+			UserId:     "cc3c5658-2e2a-4f83-bf0a-5adeab34f036",
+			TitleIssue: "Title Issue",
+			BodyIssue:  "Body issue.",
+			CreatedAt:  time.Now(),
+			UpdatedAt:  time.Now(),
+		},
 	}
 
-	s.mocking.Mock.On("UpdateCategory", categoryId, categoryDTO).Return(nil)
+	s.mocking.Mock.On("FindAllRenterReports", "e1c74c4a-2d34-4ba3-8742-73b0130afae5").Return(reports, nil)
+
+	testCases := []struct {
+		Name               string
+		ExpectedStatusCode int
+		Method             string
+		Header             map[string]string
+		Body               map[string]string
+		HasReturnBody      bool
+		ExpectedResult     map[string]interface{}
+	}{
+		{
+			Name:               "success get renter reports",
+			ExpectedStatusCode: http.StatusOK,
+			Method:             "GET",
+			HasReturnBody:      true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "success",
+				"message": "success get all reports",
+				"data": map[string]interface{}{
+					"reports": reports,
+				},
+			},
+		},
+	}
+
+	for _, v := range testCases {
+		s.T().Run(v.Name, func(t *testing.T) {
+			r := httptest.NewRequest(v.Method, "/renters", nil)
+			w := httptest.NewRecorder()
+
+			e := echo.New()
+			ctx := e.NewContext(r, w)
+			ctx.SetPath("/:id/reports")
+			ctx.SetParamNames("id")
+			ctx.SetParamValues(renterId)
+
+			err := s.handler.HandlerFindAllRenterReports(ctx)
+			s.NoError(err)
+
+			s.Equal(v.ExpectedStatusCode, w.Result().StatusCode)
+
+			if v.HasReturnBody {
+				var resp map[string]interface{}
+				err := json.NewDecoder(w.Result().Body).Decode(&resp)
+				s.NoError(err)
+
+				data := resp["data"].(map[string]interface{})
+				reports := data["reports"].([]interface{})
+
+				s.NotNil(reports)
+			}
+		})
+	}
+}
+
+func (s *suiteRenter) TestHandlerUpdateRenter() {
+	renterId := "e1c74c4a-2d34-4ba3-8742-73b0130afae5"
+	renterDTO := dto.RenterDTO{
+		RentName:    "Updated Rental Name",
+		RentAddress: "Updated Rental Address",
+		Description: "Updated descriptions.",
+	}
+
+	s.mocking.Mock.On("UpdateRenter", renterId, renterDTO).Return(nil)
 
 	testCases := []struct {
 		Name               string
@@ -271,19 +347,21 @@ func (s *suiteCategory) TestHandlerUpdateCategory() {
 		ExpectedResult     map[string]interface{}
 	}{
 		{
-			Name:               "success update category",
+			Name:               "success update renter",
 			ExpectedStatusCode: http.StatusOK,
 			Method:             "PUT",
 			Header: map[string]string{
 				"Content-Type": "application/json",
 			},
 			Body: map[string]interface{}{
-				"name": "Fixie",
+				"rent_name":    "Updated Rental Name",
+				"rent_address": "Updated Rental Address",
+				"description":  "Updated descriptions.",
 			},
 			HasReturnBody: true,
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
-				"message": "success update category by id",
+				"message": "success update renter",
 				"data":    nil,
 			},
 		},
@@ -295,12 +373,14 @@ func (s *suiteCategory) TestHandlerUpdateCategory() {
 				"Content-Type": "text/plain",
 			},
 			Body: map[string]interface{}{
-				"name": "Mountain Bike",
+				"rent_name":    "Updated Rental Name",
+				"rent_address": "Updated Rental Address",
+				"description":  "Updated descriptions.",
 			},
 			HasReturnBody: true,
 			ExpectedResult: map[string]interface{}{
 				"status":  "error",
-				"message": "name field is required",
+				"message": "fill all required fields",
 				"data":    nil,
 			},
 		},
@@ -309,17 +389,17 @@ func (s *suiteCategory) TestHandlerUpdateCategory() {
 	for _, v := range testCases {
 		s.T().Run(v.Name, func(t *testing.T) {
 			res, _ := json.Marshal(v.Body)
-			r := httptest.NewRequest(v.Method, "/categories", bytes.NewReader(res))
+			r := httptest.NewRequest(v.Method, "/renters", bytes.NewReader(res))
 			w := httptest.NewRecorder()
 
 			e := echo.New()
 			ctx := e.NewContext(r, w)
+			ctx.Request().Header.Set("Content-Type", v.Header["Content-Type"])
 			ctx.SetPath("/:id")
 			ctx.SetParamNames("id")
-			ctx.SetParamValues(categoryId)
-			ctx.Request().Header.Set("Content-Type", v.Header["Content-Type"])
+			ctx.SetParamValues(renterId)
 
-			err := s.handler.HandlerUpdateCategory(ctx)
+			err := s.handler.HandlerUpdateRenter(ctx)
 			s.NoError(err)
 
 			s.Equal(v.ExpectedStatusCode, w.Result().StatusCode)
@@ -336,10 +416,10 @@ func (s *suiteCategory) TestHandlerUpdateCategory() {
 	}
 }
 
-func (s *suiteCategory) TestHandlerDeleteCategory() {
-	categoryId := "8ad58074-228c-430d-918e-01105cc084fa"
+func (s *suiteRenter) TestHandlerDeleteRenter() {
+	renterId := "e1c74c4a-2d34-4ba3-8742-73b0130afae5"
 
-	s.mocking.Mock.On("DeleteCategory", categoryId).Return(nil)
+	s.mocking.Mock.On("DeleteRenter", renterId).Return(nil)
 
 	testCases := []struct {
 		Name               string
@@ -349,13 +429,13 @@ func (s *suiteCategory) TestHandlerDeleteCategory() {
 		ExpectedResult     map[string]interface{}
 	}{
 		{
-			Name:               "success delete category",
+			Name:               "success delete renter",
 			ExpectedStatusCode: http.StatusOK,
 			Method:             "DELETE",
 			HasReturnBody:      true,
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
-				"message": "success delete category by id",
+				"message": "success delete renter",
 				"data":    nil,
 			},
 		},
@@ -363,16 +443,16 @@ func (s *suiteCategory) TestHandlerDeleteCategory() {
 
 	for _, v := range testCases {
 		s.T().Run(v.Name, func(t *testing.T) {
-			r := httptest.NewRequest(v.Method, "/categories", nil)
+			r := httptest.NewRequest(v.Method, "/renters", nil)
 			w := httptest.NewRecorder()
 
 			e := echo.New()
 			ctx := e.NewContext(r, w)
 			ctx.SetPath("/:id")
 			ctx.SetParamNames("id")
-			ctx.SetParamValues(categoryId)
+			ctx.SetParamValues(renterId)
 
-			err := s.handler.HandlerDeleteCategory(ctx)
+			err := s.handler.HandlerDeleteRenter(ctx)
 			s.NoError(err)
 
 			s.Equal(v.ExpectedStatusCode, w.Result().StatusCode)
@@ -389,10 +469,10 @@ func (s *suiteCategory) TestHandlerDeleteCategory() {
 	}
 }
 
-func (s *suiteCategory) TearDownSuite() {
+func (s *suiteRenter) TearDownSuite() {
 	s.mocking = nil
 }
 
-func TestSuiteCategory(t *testing.T) {
-	suite.Run(t, new(suiteCategory))
+func TestSuiteRenter(t *testing.T) {
+	suite.Run(t, new(suiteRenter))
 }

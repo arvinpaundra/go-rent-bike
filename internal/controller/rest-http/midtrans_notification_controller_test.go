@@ -3,7 +3,7 @@ package rest_http
 import (
 	"bytes"
 	"encoding/json"
-	mocking "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
+	usecasemock "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"net/http"
@@ -14,11 +14,11 @@ import (
 type suiteMidtrans struct {
 	suite.Suite
 	handler *MidtransNotificationController
-	mocking *mocking.PaymentGatewayMock
+	mocking *usecasemock.PaymentGatewayMock
 }
 
 func (s *suiteMidtrans) SetupSuite() {
-	mock := &mocking.PaymentGatewayMock{}
+	mock := &usecasemock.PaymentGatewayMock{}
 	s.mocking = mock
 
 	s.handler = &MidtransNotificationController{
@@ -36,7 +36,7 @@ func (s *suiteMidtrans) TestHandlerNotification() {
 		ExpectedStatusCode int
 		Method             string
 		Header             map[string]string
-		Body               map[string]string
+		Body               map[string]interface{}
 		HasReturnBody      bool
 		ExpectedResult     map[string]interface{}
 	}{
@@ -47,7 +47,7 @@ func (s *suiteMidtrans) TestHandlerNotification() {
 			Header: map[string]string{
 				"Content-Type": "application/json",
 			},
-			Body: map[string]string{
+			Body: map[string]interface{}{
 				"order_id":           "478b3f5e-284e-440c-8c0f-af4f94c70d87",
 				"transaction_status": "success",
 				"fraud_status":       "accept",
@@ -56,6 +56,25 @@ func (s *suiteMidtrans) TestHandlerNotification() {
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
 				"message": "success update transaction status",
+				"data":    nil,
+			},
+		},
+		{
+			Name:               "failed wrong content-type",
+			ExpectedStatusCode: http.StatusBadRequest,
+			Method:             "POST",
+			Header: map[string]string{
+				"Content-Type": "text/plain",
+			},
+			Body: map[string]interface{}{
+				"order_id":           "478b3f5e-284e-440c-8c0f-af4f94c70d87",
+				"transaction_status": "success",
+				"fraud_status":       "accept",
+			},
+			HasReturnBody: true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "error",
+				"message": "fill all required fields",
 				"data":    nil,
 			},
 		},
