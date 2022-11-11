@@ -1,7 +1,6 @@
 package gormdb
 
 import (
-	"github.com/arvinpaundra/go-rent-bike/database"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
 	"gorm.io/gorm"
@@ -12,7 +11,7 @@ type OrderDetailRepository struct {
 }
 
 func (r OrderDetailRepository) Create(orderDetailUC []model.OrderDetail) error {
-	err := database.DB.Model(&model.OrderDetail{}).Create(&orderDetailUC).Error
+	err := r.DB.Model(&model.OrderDetail{}).Create(&orderDetailUC).Error
 
 	if err != nil {
 		return err
@@ -24,7 +23,7 @@ func (r OrderDetailRepository) Create(orderDetailUC []model.OrderDetail) error {
 func (r OrderDetailRepository) FindByIdOrder(orderId string) (*[]model.OrderDetail, error) {
 	details := &[]model.OrderDetail{}
 
-	err := database.DB.Model(&model.OrderDetail{}).Where("order_id = ?", orderId).Preload("Bikes.Category").Find(&details).Error
+	err := r.DB.Model(&model.OrderDetail{}).Where("order_id = ?", orderId).Preload("Bike.Category").Find(&details).Error
 
 	if err != nil {
 		return nil, err

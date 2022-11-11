@@ -8,7 +8,6 @@ import (
 	pgMidtrans "github.com/arvinpaundra/go-rent-bike/internal/midtrans"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
-	"github.com/arvinpaundra/go-rent-bike/internal/repository/gormdb"
 	"github.com/google/uuid"
 	"github.com/midtrans/midtrans-go"
 )
@@ -20,12 +19,12 @@ type OrderUsecase interface {
 
 type orderUsecase struct {
 	orderRepository          repository.OrderRepository
-	paymentGatewayRepository pgMidtrans.PaymentGatewayRepository
-	orderDetailRepository    gormdb.OrderDetailRepository
-	userRepository           gormdb.UserRepository
-	bikeRepository           gormdb.BikeRepository
-	paymentRepository        gormdb.PaymentRepository
-	historyRepository        gormdb.HistoryRepository
+	paymentGatewayRepository pgMidtrans.PaymentGateway
+	orderDetailRepository    repository.OrderDetailRepository
+	userRepository           repository.UserRepository
+	bikeRepository           repository.BikeRepository
+	paymentRepository        repository.PaymentRepository
+	historyRepository        repository.HistoryRepository
 }
 
 func (u orderUsecase) CreateOrder(orderDTO dto.OrderDTO) (map[string]interface{}, error) {
@@ -222,8 +221,20 @@ func (u orderUsecase) UpdateRentStatus(orderId string) error {
 	return nil
 }
 
-func NewOrderUsecase(orderRepo repository.OrderRepository) OrderUsecase {
+func NewOrderUsecase(
+	orderRepo repository.OrderRepository,
+	orderDetailRepo repository.OrderDetailRepository,
+	userRepo repository.UserRepository,
+	bikeRepo repository.BikeRepository,
+	paymentRepo repository.PaymentRepository,
+	historyRepo repository.HistoryRepository,
+) OrderUsecase {
 	return orderUsecase{
-		orderRepository: orderRepo,
+		orderRepository:       orderRepo,
+		orderDetailRepository: orderDetailRepo,
+		userRepository:        userRepo,
+		bikeRepository:        bikeRepo,
+		paymentRepository:     paymentRepo,
+		historyRepository:     historyRepo,
 	}
 }

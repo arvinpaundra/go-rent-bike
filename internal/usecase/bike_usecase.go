@@ -6,7 +6,6 @@ import (
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
-	"github.com/arvinpaundra/go-rent-bike/internal/repository/gormdb"
 	"github.com/google/uuid"
 )
 
@@ -23,10 +22,10 @@ type BikeUsecase interface {
 
 type bikeUsecase struct {
 	bikeRepository     repository.BikeRepository
-	renterRepository   gormdb.RenterRepository
-	categoryRepository gormdb.CategoryRepository
-	userRepository     gormdb.UserRepository
-	reviewRepository   gormdb.ReviewRepository
+	renterRepository   repository.RenterRepository
+	categoryRepository repository.CategoryRepository
+	userRepository     repository.UserRepository
+	reviewRepository   repository.ReviewRepository
 }
 
 func (u bikeUsecase) CreateNewBike(bikeDTO dto.BikeDTO) error {
@@ -113,9 +112,7 @@ func (u bikeUsecase) FindBikesByCategory(categoryId string) (*[]model.Bike, erro
 
 func (u bikeUsecase) UpdateBike(bikeId string, bikeDTO dto.BikeDTO) error {
 	var err error
-	var bike *model.Bike
-
-	bike, err = u.bikeRepository.FindById(bikeId)
+	_, err = u.bikeRepository.FindById(bikeId)
 
 	if err != nil {
 		return err
@@ -132,15 +129,12 @@ func (u bikeUsecase) UpdateBike(bikeId string, bikeDTO dto.BikeDTO) error {
 	}
 
 	updatedBike := model.Bike{
-		ID:           bikeId,
-		RenterId:     renterId,
 		CategoryId:   categoryId,
 		Name:         bikeDTO.Name,
 		PricePerHour: bikeDTO.PricePerHour,
 		Condition:    bikeDTO.Condition,
 		Description:  bikeDTO.Description,
 		IsAvailable:  bikeDTO.IsAvailable,
-		CreatedAt:    bike.CreatedAt,
 		UpdatedAt:    time.Now(),
 	}
 
@@ -199,6 +193,18 @@ func (u bikeUsecase) CreateNewBikeReview(bikeId string, reviewDTO dto.ReviewDTO)
 	return nil
 }
 
-func NewBikeUsecase(bikeRepo repository.BikeRepository) BikeUsecase {
-	return bikeUsecase{bikeRepository: bikeRepo}
+func NewBikeUsecase(
+	bikeRepo repository.BikeRepository,
+	renterRepo repository.RenterRepository,
+	categoryRepo repository.CategoryRepository,
+	userRepo repository.UserRepository,
+	reviewRepo repository.ReviewRepository,
+) BikeUsecase {
+	return bikeUsecase{
+		bikeRepository:     bikeRepo,
+		renterRepository:   renterRepo,
+		categoryRepository: categoryRepo,
+		userRepository:     userRepo,
+		reviewRepository:   reviewRepo,
+	}
 }

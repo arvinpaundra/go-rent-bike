@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
-	mocking "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
+	usecasemock "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"net/http"
@@ -17,11 +17,11 @@ import (
 type suiteBikes struct {
 	suite.Suite
 	handler *BikeController
-	mocking *mocking.BikeUsecaseMock
+	mocking *usecasemock.BikeUsecaseMock
 }
 
 func (s *suiteBikes) SetupSuite() {
-	mock := &mocking.BikeUsecaseMock{}
+	mock := &usecasemock.BikeUsecaseMock{}
 	s.mocking = mock
 
 	s.handler = &BikeController{
@@ -71,6 +71,29 @@ func (s *suiteBikes) TestHandlerAddNewBike() {
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
 				"message": "success add new bike",
+				"data":    nil,
+			},
+		},
+		{
+			Name:               "failed wrong content-type",
+			ExpectedStatusCode: http.StatusBadRequest,
+			Method:             "POST",
+			Header: map[string]string{
+				"Content-Type": "text/plain",
+			},
+			Body: map[string]interface{}{
+				"renter_id":      "478b3f5e-284e-440c-8c0f-af4f94c70d87",
+				"category_id":    "8cfb93e7-a1f4-47e2-bb5b-ffea24761322",
+				"name":           "Sample Mountain Bike",
+				"price_per_hour": float32(12000),
+				"condition":      "Good",
+				"description":    "Description section.",
+				"is_available":   "1",
+			},
+			HasReturnBody: true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "error",
+				"message": "fill all required fields",
 				"data":    nil,
 			},
 		},
@@ -139,6 +162,25 @@ func (s *suiteBikes) TestHandlerCreateNewBikeReview() {
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
 				"message": "success create new bike review",
+				"data":    nil,
+			},
+		},
+		{
+			Name:               "failed wrong content-type",
+			ExpectedStatusCode: http.StatusBadRequest,
+			Method:             "POST",
+			Header: map[string]string{
+				"Content-Type": "text/plain",
+			},
+			Body: map[string]interface{}{
+				"user_id":     "8ad58074-228c-430d-918e-01105cc084fa",
+				"rating":      5,
+				"description": "What a good bike.",
+			},
+			HasReturnBody: true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "error",
+				"message": "fill all required fields",
 				"data":    nil,
 			},
 		},
@@ -529,6 +571,29 @@ func (s *suiteBikes) TestHandlerUpdateBike() {
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
 				"message": "success update bike by id",
+				"data":    nil,
+			},
+		},
+		{
+			Name:               "failed wrong content-type",
+			ExpectedStatusCode: http.StatusBadRequest,
+			Method:             "POST",
+			Header: map[string]string{
+				"Content-Type": "text/plain",
+			},
+			Body: map[string]interface{}{
+				"renter_id":      "478b3f5e-284e-440c-8c0f-af4f94c70d87",
+				"category_id":    "8cfb93e7-a1f4-47e2-bb5b-ffea24761322",
+				"name":           "Sample Mountain Bike",
+				"price_per_hour": float32(12000),
+				"condition":      "Good",
+				"description":    "Description section.",
+				"is_available":   "1",
+			},
+			HasReturnBody: true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "error",
+				"message": "fill all required fields",
 				"data":    nil,
 			},
 		},

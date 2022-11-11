@@ -2,9 +2,9 @@ package rest_http
 
 import (
 	"errors"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 	"net/http"
 
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/usecase"
@@ -25,7 +25,7 @@ func (h *UserController) HandlerRegister(c echo.Context) error {
 	if err := c.Bind(&userDTO); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status":  "error",
-			"message": "fill all required field",
+			"message": "fill all required fields",
 			"data":    nil,
 		})
 	}
@@ -41,7 +41,7 @@ func (h *UserController) HandlerRegister(c echo.Context) error {
 	err := h.userUsecase.RegisterUser(userDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrDataAlreadyExist) {
+		if errors.Is(err, pkg.ErrDataAlreadyExist) {
 			return c.JSON(http.StatusConflict, map[string]interface{}{
 				"status":  "error",
 				"message": "email already exist",
@@ -80,7 +80,7 @@ func (h *UserController) HandlerLogin(c echo.Context) error {
 	token, err := h.userUsecase.LoginUser(loginDTO.Email, loginDTO.Password)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusConflict, map[string]interface{}{
 				"status":  "error",
 				"message": "wrong email or password",
@@ -130,7 +130,7 @@ func (h *UserController) HandlerFindUserById(c echo.Context) error {
 	user, err := h.userUsecase.FindByIdUser(userId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "user not found",
@@ -160,7 +160,7 @@ func (h *UserController) HandlerFindAllUserHistories(c echo.Context) error {
 	histories, err := h.userUsecase.FindAllUserHistories(userId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "user not found",
@@ -190,7 +190,7 @@ func (h *UserController) HandlerFindAllOrdersUser(c echo.Context) error {
 	orders, err := h.userUsecase.FindAllOrdersUser(userId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "customer not found",
@@ -221,7 +221,7 @@ func (h *UserController) HandlerFindByIdOrderUser(c echo.Context) error {
 	order, err := h.userUsecase.FindByIdOrderUser(orderId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "order not found",
@@ -252,7 +252,7 @@ func (h *UserController) HandlerUpdateUser(c echo.Context) error {
 	if err := c.Bind(&userDTO); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status":  "error",
-			"message": "fill all required field",
+			"message": "fill all required fields",
 			"data":    nil,
 		})
 	}
@@ -260,7 +260,7 @@ func (h *UserController) HandlerUpdateUser(c echo.Context) error {
 	err := h.userUsecase.UpdateUser(userId, userDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "user not found",
@@ -285,10 +285,10 @@ func (h *UserController) HandlerUpdateUser(c echo.Context) error {
 func (h *UserController) HandlerDeleteUser(c echo.Context) error {
 	userId := c.Param("id")
 
-	rowAffected, err := h.userUsecase.DeleteUser(userId)
+	err := h.userUsecase.DeleteUser(userId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "user not found",
@@ -306,8 +306,6 @@ func (h *UserController) HandlerDeleteUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "success delete user",
-		"data": map[string]uint{
-			"row_affected": rowAffected,
-		},
+		"data":    nil,
 	})
 }

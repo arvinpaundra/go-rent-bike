@@ -5,7 +5,7 @@ import (
 
 	"github.com/arvinpaundra/go-rent-bike/configs"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
-	"github.com/arvinpaundra/go-rent-bike/internal/repository/gormdb"
+	"github.com/arvinpaundra/go-rent-bike/internal/repository"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/coreapi"
 )
@@ -17,9 +17,9 @@ type PaymentGatewayUsecase interface {
 }
 
 type paymentGatewayUsecase struct {
-	orderRepository   gormdb.OrderRepository
-	paymentRepository gormdb.PaymentRepository
-	historyRepository gormdb.HistoryRepository
+	orderRepository   repository.OrderRepository
+	paymentRepository repository.PaymentRepository
+	historyRepository repository.HistoryRepository
 }
 
 func (u paymentGatewayUsecase) InitializeCoreapiClient() {
@@ -112,6 +112,10 @@ func (u paymentGatewayUsecase) MidtransNotification(orderId string) error {
 	return nil
 }
 
-func NewPaymentGatewayUsecase() PaymentGatewayUsecase {
+func NewPaymentGatewayUsecase(
+	orderRepo repository.OrderRepository,
+	paymentRepo repository.PaymentRepository,
+	historyRepo repository.HistoryRepository,
+) PaymentGatewayUsecase {
 	return paymentGatewayUsecase{}
 }

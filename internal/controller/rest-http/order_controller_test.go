@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
-	mocking "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
+	usecasemock "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"net/http"
@@ -17,11 +17,11 @@ import (
 type suiteOrders struct {
 	suite.Suite
 	handler *OrderController
-	mocking *mocking.OrderUsecaseMock
+	mocking *usecasemock.OrderUsecaseMock
 }
 
 func (s *suiteOrders) SetupSuite() {
-	mock := &mocking.OrderUsecaseMock{}
+	mock := &usecasemock.OrderUsecaseMock{}
 	s.mocking = mock
 
 	s.handler = &OrderController{
@@ -89,6 +89,26 @@ func (s *suiteOrders) TestHandlerCreateNewOrder() {
 				"data":    order,
 			},
 		},
+		{
+			Name:               "failed wrong content-type",
+			ExpectedStatusCode: http.StatusBadRequest,
+			Method:             "POST",
+			Header: map[string]string{
+				"Content-Type": "text/plain",
+			},
+			Body: map[string]interface{}{
+				"customer_id":  "81cef832-e4de-4588-a026-6a106cf10a19",
+				"bike_ids":     []string{"92d88bd9-d3d2-4bd5-adba-a8161cc26cc1"},
+				"total_hour":   int(4),
+				"payment_type": "bank_transfer",
+			},
+			HasReturnBody: true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "error",
+				"message": "fill all required fields",
+				"data":    nil,
+			},
+		},
 	}
 
 	for _, v := range testCases {
@@ -111,14 +131,8 @@ func (s *suiteOrders) TestHandlerCreateNewOrder() {
 				err := json.NewDecoder(w.Result().Body).Decode(&resp)
 				s.NoError(err)
 
-				expectedOrder := v.ExpectedResult["data"].(map[string]interface{})
-				orderRes := resp["data"].(map[string]interface{})
-
 				s.Equal(v.ExpectedResult["status"], resp["status"])
 				s.Equal(v.ExpectedResult["message"], resp["message"])
-				s.Equal(expectedOrder["order_id"], orderRes["order_id"])
-				s.Equal(expectedOrder["payment_link"], orderRes["payment_link"])
-				s.Equal(expectedOrder["total_payments"], float32(orderRes["total_payments"].(float64)))
 			}
 		})
 	}

@@ -2,9 +2,9 @@ package rest_http
 
 import (
 	"errors"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 	"net/http"
 
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/usecase"
@@ -25,7 +25,7 @@ func (h *CategoryController) HandlerCreateCategory(c echo.Context) error {
 	if err := c.Bind(&categoryDTO); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status":  "error",
-			"message": "name field is required",
+			"message": "fill all required fields",
 			"data":    nil,
 		})
 	}
@@ -73,7 +73,7 @@ func (h *CategoryController) HandlerFindCategoryById(c echo.Context) error {
 	category, err := h.categoryUsecase.FindByIdCategory(categoryId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "category not found",
@@ -112,7 +112,7 @@ func (h *CategoryController) HandlerUpdateCategory(c echo.Context) error {
 	err := h.categoryUsecase.UpdateCategory(categoryId, categoryDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "category not found",
@@ -137,10 +137,10 @@ func (h *CategoryController) HandlerUpdateCategory(c echo.Context) error {
 func (h *CategoryController) HandlerDeleteCategory(c echo.Context) error {
 	categoryId := c.Param("id")
 
-	rowAffected, err := h.categoryUsecase.DeleteCategory(categoryId)
+	err := h.categoryUsecase.DeleteCategory(categoryId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "category not found",
@@ -158,8 +158,6 @@ func (h *CategoryController) HandlerDeleteCategory(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "success delete category by id",
-		"data": map[string]uint{
-			"row_affected": rowAffected,
-		},
+		"data":    nil,
 	})
 }

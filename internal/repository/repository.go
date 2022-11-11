@@ -1,17 +1,16 @@
 package repository
 
 import (
-	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 )
 
 type UserRepository interface {
 	Create(userUC model.User) error
-	FindByEmailAndPassword(email string, password string) (*model.User, error)
+	FindByEmail(email string) (*model.User, error)
 	FindAll() (*[]model.User, error)
 	FindById(userId string) (*model.User, error)
 	Update(userId string, userUC model.User) error
-	Delete(userId string) (uint, error)
+	Delete(userId string) error
 }
 
 type CategoryRepository interface {
@@ -19,7 +18,7 @@ type CategoryRepository interface {
 	FindAll() (*[]model.Category, error)
 	FindById(categoryId string) (*model.Category, error)
 	Update(categoryId string, categoryUC model.Category) error
-	Delete(categoryId string) (uint, error)
+	Delete(categoryId string) error
 }
 
 type RenterRepository interface {
@@ -28,7 +27,7 @@ type RenterRepository interface {
 	FindById(renterId string) (*model.Renter, error)
 	FindByIdUser(userId string) (*model.Renter, error)
 	Update(renterId string, renterUC model.Renter) error
-	Delete(renterId string) (uint, error)
+	Delete(renterId string) error
 }
 
 type BikeRepository interface {
@@ -51,18 +50,11 @@ type OrderRepository interface {
 	Create(orderUC model.Order) error
 	FindAll(userId string) (*[]model.Order, error)
 	FindById(orderId string) (*model.Order, error)
-	Update(orderId string, orderUC model.Order) error
 }
 
 type OrderDetailRepository interface {
 	Create(orderDetailUC []model.OrderDetail) error
 	FindByIdOrder(orderId string) (*[]model.OrderDetail, error)
-}
-
-type PaymentGatewayRepository interface {
-	InitializeClientMidtrans()
-	CreateTransaction(snap dto.PaymentGateway) string
-	CreateUrlTransactionWithGateway(snap dto.PaymentGateway) string
 }
 
 type ReviewRepository interface {

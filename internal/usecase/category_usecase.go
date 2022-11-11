@@ -1,6 +1,10 @@
 package usecase
 
 import (
+	"time"
+
+	"github.com/google/uuid"
+
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/repository"
@@ -11,7 +15,7 @@ type CategoryUsecase interface {
 	FindAllCategories() (*[]model.Category, error)
 	FindByIdCategory(categoryId string) (*model.Category, error)
 	UpdateCategory(categoryId string, categoryDTO dto.CategoryDTO) error
-	DeleteCategory(categoryId string) (uint, error)
+	DeleteCategory(categoryId string) error
 }
 
 type categoryUsecase struct {
@@ -20,7 +24,10 @@ type categoryUsecase struct {
 
 func (c categoryUsecase) CreateCategory(categoryDTO dto.CategoryDTO) error {
 	category := model.Category{
-		Name: categoryDTO.Name,
+		ID:        uuid.NewString(),
+		Name:      categoryDTO.Name,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	err := c.categoryRepository.Create(category)
@@ -53,11 +60,20 @@ func (c categoryUsecase) FindByIdCategory(categoryId string) (*model.Category, e
 }
 
 func (c categoryUsecase) UpdateCategory(categoryId string, categoryDTO dto.CategoryDTO) error {
-	category := model.Category{
-		Name: categoryDTO.Name,
+	var err error
+
+	_, err = c.categoryRepository.FindById(categoryId)
+
+	if err != nil {
+		return err
 	}
 
-	err := c.categoryRepository.Update(categoryId, category)
+	categoryUC := model.Category{
+		Name:      categoryDTO.Name,
+		UpdatedAt: time.Now(),
+	}
+
+	err = c.categoryRepository.Update(categoryId, categoryUC)
 
 	if err != nil {
 		return err
@@ -66,14 +82,18 @@ func (c categoryUsecase) UpdateCategory(categoryId string, categoryDTO dto.Categ
 	return nil
 }
 
-func (c categoryUsecase) DeleteCategory(categoryId string) (uint, error) {
-	rowAffected, err := c.categoryRepository.Delete(categoryId)
-
-	if err != nil {
-		return rowAffected, err
+func (c categoryUsecase) DeleteCategory(categoryId string) error {
+	if _, err := c.categoryRepository.FindById(categoryId); err != nil {
+		return err
 	}
 
-	return rowAffected, nil
+	err := c.categoryRepository.Delete(categoryId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NewCategoryUsecase(categoryRepo repository.CategoryRepository) CategoryUsecase {

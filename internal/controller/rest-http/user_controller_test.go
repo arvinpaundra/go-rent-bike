@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
-	mocking "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
+	usecasemock "github.com/arvinpaundra/go-rent-bike/internal/usecase/mock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"net/http"
@@ -17,11 +17,11 @@ import (
 type suiteUsers struct {
 	suite.Suite
 	handler *UserController
-	mocking *mocking.UserUsecaseMock
+	mocking *usecasemock.UserUsecaseMock
 }
 
 func (s *suiteUsers) SetupSuite() {
-	mock := &mocking.UserUsecaseMock{}
+	mock := &usecasemock.UserUsecaseMock{}
 	s.mocking = mock
 
 	s.handler = &UserController{
@@ -46,7 +46,7 @@ func (s *suiteUsers) TestHandlerRegister() {
 		ExpectedStatusCode int
 		Method             string
 		Header             map[string]string
-		Body               map[string]string
+		Body               map[string]interface{}
 		HasReturnBody      bool
 		ExpectedResult     map[string]interface{}
 	}{
@@ -57,7 +57,7 @@ func (s *suiteUsers) TestHandlerRegister() {
 			Header: map[string]string{
 				"Content-Type": "application/json",
 			},
-			Body: map[string]string{
+			Body: map[string]interface{}{
 				"address":  "Jl Rinjani",
 				"phone":    "087654321",
 				"fullname": "Arvin Paundra",
@@ -69,6 +69,28 @@ func (s *suiteUsers) TestHandlerRegister() {
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
 				"message": "register success",
+				"data":    nil,
+			},
+		},
+		{
+			Name:               "failed wrong content-type",
+			ExpectedStatusCode: http.StatusBadRequest,
+			Method:             "POST",
+			Header: map[string]string{
+				"Content-Type": "text/plain",
+			},
+			Body: map[string]interface{}{
+				"address":  "Jl Rinjani",
+				"phone":    "087654321",
+				"fullname": "Arvin Paundra",
+				"role":     "customer",
+				"email":    "arvin@mail.com",
+				"password": "123",
+			},
+			HasReturnBody: true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "error",
+				"message": "fill all required fields",
 				"data":    nil,
 			},
 		},
@@ -111,7 +133,7 @@ func (s *suiteUsers) TestHandlerLogin() {
 		ExpectedStatusCode int
 		Method             string
 		Header             map[string]string
-		Body               map[string]string
+		Body               map[string]interface{}
 		HasReturnBody      bool
 		ExpectedResult     map[string]interface{}
 	}{
@@ -122,7 +144,7 @@ func (s *suiteUsers) TestHandlerLogin() {
 			Header: map[string]string{
 				"Content-Type": "application/json",
 			},
-			Body: map[string]string{
+			Body: map[string]interface{}{
 				"email":    "arvin@mail.com",
 				"password": "123",
 			},
@@ -133,6 +155,24 @@ func (s *suiteUsers) TestHandlerLogin() {
 				"data": map[string]interface{}{
 					"token": token,
 				},
+			},
+		},
+		{
+			Name:               "failed wrong content-type",
+			ExpectedStatusCode: http.StatusBadRequest,
+			Method:             "POST",
+			Header: map[string]string{
+				"Content-Type": "text/plain",
+			},
+			Body: map[string]interface{}{
+				"email":    "arvin@mail.com",
+				"password": "123",
+			},
+			HasReturnBody: true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "error",
+				"message": "email and password is required",
+				"data":    nil,
 			},
 		},
 	}
@@ -158,7 +198,8 @@ func (s *suiteUsers) TestHandlerLogin() {
 				err := json.NewDecoder(w.Result().Body).Decode(&resp)
 				s.NoError(err)
 
-				s.Equal(v.ExpectedResult, resp)
+				s.Equal(v.ExpectedResult["status"], resp["status"])
+				s.Equal(v.ExpectedResult["message"], resp["message"])
 			}
 		})
 	}
@@ -547,7 +588,7 @@ func (s *suiteUsers) TestHandlerUpdateUser() {
 		ExpectedStatusCode int
 		Method             string
 		Header             map[string]string
-		Body               map[string]string
+		Body               map[string]interface{}
 		HasReturnBody      bool
 		ExpectedResult     map[string]interface{}
 	}{
@@ -558,7 +599,7 @@ func (s *suiteUsers) TestHandlerUpdateUser() {
 			Header: map[string]string{
 				"Content-Type": "application/json",
 			},
-			Body: map[string]string{
+			Body: map[string]interface{}{
 				"fullname": "Kujo Jotaro",
 				"phone":    "08654433",
 				"address":  "Jl Sengon",
@@ -568,6 +609,26 @@ func (s *suiteUsers) TestHandlerUpdateUser() {
 			ExpectedResult: map[string]interface{}{
 				"status":  "success",
 				"message": "success update user",
+				"data":    nil,
+			},
+		},
+		{
+			Name:               "failed wrong content-type",
+			ExpectedStatusCode: http.StatusBadRequest,
+			Method:             "POST",
+			Header: map[string]string{
+				"Content-Type": "text/plain",
+			},
+			Body: map[string]interface{}{
+				"fullname": "Kujo Jotaro",
+				"phone":    "08654433",
+				"address":  "Jl Sengon",
+				"role":     "customer",
+			},
+			HasReturnBody: true,
+			ExpectedResult: map[string]interface{}{
+				"status":  "error",
+				"message": "fill all required fields",
 				"data":    nil,
 			},
 		},
@@ -596,6 +657,7 @@ func (s *suiteUsers) TestHandlerUpdateUser() {
 				err := json.NewDecoder(w.Result().Body).Decode(&resp)
 				s.NoError(err)
 
+				s.Equal(v.ExpectedResult["status"], resp["status"])
 				s.Equal(v.ExpectedResult["message"], resp["message"])
 			}
 		})
@@ -605,7 +667,7 @@ func (s *suiteUsers) TestHandlerUpdateUser() {
 func (s *suiteUsers) TestHandlerDeleteUser() {
 	userId := "2d272252-7b5d-4f50-85ee-e578e3826510"
 
-	s.mocking.Mock.On("DeleteUser", userId).Return(uint(1), nil)
+	s.mocking.Mock.On("DeleteUser", userId).Return(nil)
 
 	testCases := []struct {
 		Name               string

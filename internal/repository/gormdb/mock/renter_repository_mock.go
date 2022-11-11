@@ -1,4 +1,4 @@
-package repo_mock
+package repomock
 
 import (
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
@@ -39,8 +39,8 @@ func (r *RenterRepositoryMock) Update(renterId string, renterUC model.Renter) er
 	return ret.Error(0)
 }
 
-func (r *RenterRepositoryMock) Delete(renterId string) (uint, error) {
+func (r *RenterRepositoryMock) Delete(renterId string) error {
 	ret := r.Mock.Called(renterId)
 
-	return ret.Get(0).(uint), ret.Error(1)
+	return ret.Error(0)
 }

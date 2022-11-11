@@ -2,9 +2,9 @@ package rest_http
 
 import (
 	"errors"
+	"github.com/arvinpaundra/go-rent-bike/pkg"
 	"net/http"
 
-	"github.com/arvinpaundra/go-rent-bike/internal"
 	"github.com/arvinpaundra/go-rent-bike/internal/dto"
 	"github.com/arvinpaundra/go-rent-bike/internal/model"
 	"github.com/arvinpaundra/go-rent-bike/internal/usecase"
@@ -33,7 +33,7 @@ func (r RenterController) HandlerCreateRenter(c echo.Context) error {
 	err := r.renterUsecase.CreateRenter(renterDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "user not found",
@@ -70,7 +70,7 @@ func (r RenterController) HandlerCreateReportRenter(c echo.Context) error {
 	err := r.renterUsecase.CreateReportRenter(renterId, reportDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "renter not found",
@@ -120,7 +120,7 @@ func (r RenterController) HandlerFindRenterById(c echo.Context) error {
 	renter, err := r.renterUsecase.FindByIdRenter(renterId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "renter not found",
@@ -150,7 +150,7 @@ func (r RenterController) HandlerFindAllRenterReports(c echo.Context) error {
 	reports, err := r.renterUsecase.FindAllRenterReports(renterId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "renter not found",
@@ -165,7 +165,7 @@ func (r RenterController) HandlerFindAllRenterReports(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "success get all reports",
 		"data": map[string]*[]model.Report{
@@ -181,7 +181,7 @@ func (r RenterController) HandlerUpdateRenter(c echo.Context) error {
 	if err := c.Bind(&renterDTO); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status":  "error",
-			"message": err.Error(),
+			"message": "fill all required fields",
 			"data":    nil,
 		})
 	}
@@ -189,7 +189,7 @@ func (r RenterController) HandlerUpdateRenter(c echo.Context) error {
 	err := r.renterUsecase.UpdateRenter(renterId, renterDTO)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "renter not found",
@@ -204,7 +204,7 @@ func (r RenterController) HandlerUpdateRenter(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "success update renter",
 		"data":    nil,
@@ -214,10 +214,10 @@ func (r RenterController) HandlerUpdateRenter(c echo.Context) error {
 func (r RenterController) HandlerDeleteRenter(c echo.Context) error {
 	renterId := c.Param("id")
 
-	rowAffected, err := r.renterUsecase.DeleteRenter(renterId)
+	err := r.renterUsecase.DeleteRenter(renterId)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrRecordNotFound) {
+		if errors.Is(err, pkg.ErrRecordNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"status":  "error",
 				"message": "renter not found",
@@ -235,8 +235,6 @@ func (r RenterController) HandlerDeleteRenter(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "success delete renter",
-		"data": map[string]uint{
-			"row_affected": rowAffected,
-		},
+		"data":    nil,
 	})
 }
